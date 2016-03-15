@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="notification_area_v1">
+    <copyright>
+	Copyright © 2011-2016 Quentin "Sardem FF7" Glidic
+
+	Permission to use, copy, modify, distribute, and sell this
+	software and its documentation for any purpose is hereby granted
+	without fee, provided that the above copyright notice appear in
+	all copies and that both that copyright notice and this permission
+	notice appear in supporting documentation, and that the name of
+	the copyright holders not be used in advertising or publicity
+	pertaining to distribution of the software without specific,
+	written prior permission.  The copyright holders make no
+	representations about the suitability of this software for any
+	purpose.  It is provided "as is" without express or implied
+	warranty.
+
+	THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+	SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+	FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+	SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+	WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+	AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+	ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+	THIS SOFTWARE.
+    </copyright>
+
+    <interface name="zwna_notification_area_v1" version="1">
+	<description summary="singleton for notification daemons">
+	    The object is a singleton global.
+
+	    This interface can only be bound once at the same time.
+	    Any binding of this interface while already bound results
+	    in a protocol error (bound).
+
+	    This interface is intended for classic notification daemons which
+	    display “bubbles”. These daemons are meant to be used in small
+	    desktop environment or with highly-customizable compositors.
+	    This interface must not be implemented where an integrated
+	    notification system is desirable, like in complete desktop
+	    environments as GNOME, KDE or EFL. Such an integrated
+
+	    DE-independent daemons have an internal logic to place these
+	    notifications on screen, which can be a really complex layout.
+	    The compositor is in charge of providing a area for the
+	    notification daemon to use. This is usually the screen area, minus
+	    panels or other surfaces that should always be visible.
+	    The compositor is also selecting the output to render notifications.
+
+
+	    The geometry event informs the notification daemon of the available
+	    area to display notifications.
+
+	    The notification daemon can will create notifications using
+	    the wp_notification_area.create_notification request, then move it
+	    with the wp_notification.move request to achieve the desired layout.
+	</description>
+
+	<request name="destroy" type="destructor" />
+
+	<enum name="error">
+	    <description summary="wp_notification_area error values">
+		These errors can be emitted in response to
+		wl_notification_area requests.
+	    </description>
+	    <entry name="bound" value="0" summary="wp_notification_area is already bound"/>
+	    <entry name="role" value="1" summary="given wl_surface has another role"/>
+	</enum>
+
+	<request name="create_notification">
+	    <description summary="create a notification from a wl_surface">
+		This gives the wl_surface the role of a notification.
+		If the wl_surface already has another role, it raises
+		a protocol error (role).
+
+		See the wp_notification interface for details.
+	    </description>
+	    <arg name="id" type="new_id" interface="zwna_notification_v1" />
+	    <arg name="surface" type="object" interface="wl_surface" />
+	</request>
+
+	<event name="geometry">
+	    <description summary="create a notification from a wl_surface">
+		This event will be sent the geometry event whenever the work
+		area changes. It will be sent at binding if the area is
+		already known. If not, the notification daemon must assume
+		an initial area of (0,0).
+
+		A area of (0,0) means that no notification can be placed,
+		and thus the compositor will simply not map the created surfaces
+		if any. Notification daemons can e.g. delay notifications until
+		the area is big enough to display them again.
+	    </description>
+	    <arg name="width" type="int" />
+	    <arg name="height" type="int" />
+	</event>
+    </interface>
+
+    <interface name="zwna_notification_v1" version="1">
+	<description summary="a notification bubble">
+	    This interface represents a notification bubble.
+
+	    A notification should not be restricted as a normal window,
+	    and be placed on top of all other surfaces, so that
+	    the user will see it clearly.
+	</description>
+
+	<enum name="error">
+	    <description summary="wp_notification error values">
+		These errors can be emitted in response to wl_notification requests.
+	    </description>
+	    <entry name="outside_area" value="0" summary="notification would be rendered outside the area"/>
+	</enum>
+
+	<request name="destroy" type="destructor" />
+
+	<request name="move">
+	    <description summary="create a notification from a wl_surface">
+		This request moves a notification inside the area.
+		Coordinates map the top-left corner of the notification from
+		the top-left corner of the area.
+
+		Notifications must fit in the area, otherwise
+		a protocol error (outside-area) is sent.
+	    </description>
+	    <arg name="x" type="int" summary="x coordinate, area-relative" />
+	    <arg name="y" type="int" summary="y coordinate, area-relative" />
+	</request>
+    </interface>
+</protocol>

@@ -1,0 +1,12 @@
+/src/config.h.in
+/src/config.h
+
+/src/notification-area-unstable-v*-protocol.c
+/src/notification-area-unstable-v*-server-protocol.h
+
+/weston-notification-area.la
+/orbment-plugin-notification-area.la
+
+/pkgconfig/*.pc
+
+/local-rules.mk

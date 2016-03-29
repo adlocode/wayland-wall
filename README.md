@@ -9,3 +9,9 @@ For now, these compositors are supported:
 
 * Weston
 * Orbment
+
+
+Client implementations
+----------------------
+
+* [eventd](http://www.eventd.org/)

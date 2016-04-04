@@ -5,6 +5,16 @@ This protocol will allow notification daemons to display their notifications usi
 
 This project will try to provide a compositor implementation for plugin-based compositors.
 
+
+Releases
+--------
+
+You can find releases tarballs [here](http://download.tuxfamily.org/eventd/wayland-notification-area/).
+
+
+Compositor implementations
+--------------------------
+
 For now, these compositors are supported:
 
 * Weston

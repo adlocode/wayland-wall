@@ -90,10 +90,10 @@ AM_CONDITIONAL([ENABLE_WESTON], [test x${enable_weston} = xyes])
 
 # orbment plugin
 AC_ARG_ENABLE([orbment], AS_HELP_STRING([--disable-orbment], [Disable Orbment plugin]), [], [enable_orbment=yes])
-AC_ARG_WITH([orbmentplugindir], AS_HELP_STRING([--with-orbmentplugindir=DIR], [Directory for Weston plugins]), [], [with_orbmentplugindir=yes])
+AC_ARG_WITH([orbmentplugindir], AS_HELP_STRING([--with-orbmentplugindir=DIR], [Directory for Orbment plugins]), [], [with_orbmentplugindir=yes])
 if test x${enable_orbment} = xyes; then
     case "${with_orbmentplugindir}" in
-        no|"") AC_MSG_ERROR([*** You must define orbmentplugindir when compiling Weston plugin]) ;;
+        no|"") AC_MSG_ERROR([*** You must define orbmentplugindir when compiling Orbment plugin]) ;;
         yes) orbmentplugindir='${libdir}/orbment' ;;
         *) orbmentplugindir="${with_orbmentplugindir}" ;;
     esac

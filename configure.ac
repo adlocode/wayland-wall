@@ -1,5 +1,5 @@
 AC_PREREQ([2.65])
-AC_INIT([wayland-notification-area],[3])
+AC_INIT([wayland-notification-area],[4])
 
 AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_SRCDIR([protocol/notification-area-unstable-v2.xml])

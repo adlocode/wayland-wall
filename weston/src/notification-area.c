@@ -37,7 +37,7 @@
 
 #include <wayland-server.h>
 #include <weston/compositor.h>
-#include "notification-area-unstable-v1-server-protocol.h"
+#include "notification-area-unstable-v2-server-protocol.h"
 
 struct weston_notification_area {
     struct weston_compositor *compositor;
@@ -81,7 +81,7 @@ _weston_notification_area_notification_request_move(struct wl_client *client, st
     weston_surface_damage(self->surface);
 }
 
-static const struct zwna_notification_v1_interface weston_notification_area_notification_implementation = {
+static const struct zwna_notification_v2_interface weston_notification_area_notification_implementation = {
     .destroy = _weston_notification_area_request_destroy,
     .move = _weston_notification_area_notification_request_move,
 };
@@ -110,7 +110,7 @@ _weston_notification_area_create_notification(struct wl_client *client, struct w
     struct weston_notification_area *na = wl_resource_get_user_data(resource);
     struct weston_surface *surface = wl_resource_get_user_data(surface_resource);
 
-    if (weston_surface_set_role(surface, "wp_notification", resource, ZWNA_NOTIFICATION_AREA_V1_ERROR_ROLE) < 0)
+    if (weston_surface_set_role(surface, "wp_notification", resource, ZWNA_NOTIFICATION_AREA_V2_ERROR_ROLE) < 0)
         return;
 
     struct weston_notification_area_notification *notification;
@@ -121,7 +121,7 @@ _weston_notification_area_create_notification(struct wl_client *client, struct w
     }
     notification->na = na;
 
-    notification->resource = wl_resource_create(client, &zwna_notification_v1_interface, 1, id);
+    notification->resource = wl_resource_create(client, &zwna_notification_v2_interface, 1, id);
     notification->surface = surface;
     notification->view = weston_view_create(notification->surface);
     notification->view->output = na->output;
@@ -131,7 +131,7 @@ _weston_notification_area_create_notification(struct wl_client *client, struct w
     wl_resource_set_implementation(notification->resource, &weston_notification_area_notification_implementation, notification, _weston_notification_area_notification_destroy);
 }
 
-static const struct zwna_notification_area_v1_interface weston_notification_area_implementation = {
+static const struct zwna_notification_area_v2_interface weston_notification_area_implementation = {
     .destroy = _weston_notification_area_destroy,
     .create_notification = _weston_notification_area_create_notification,
 };
@@ -150,19 +150,19 @@ _weston_notification_area_bind(struct wl_client *client, void *data, uint32_t ve
     struct weston_notification_area *na = data;
     struct wl_resource *resource;
 
-    resource = wl_resource_create(client, &zwna_notification_area_v1_interface, version, id);
+    resource = wl_resource_create(client, &zwna_notification_area_v2_interface, version, id);
     wl_resource_set_implementation(resource, &weston_notification_area_implementation, na, _weston_notification_area_unbind);
 
     if ( na->binding != NULL )
     {
-        wl_resource_post_error(resource, ZWNA_NOTIFICATION_AREA_V1_ERROR_BOUND, "interface object already bound");
+        wl_resource_post_error(resource, ZWNA_NOTIFICATION_AREA_V2_ERROR_BOUND, "interface object already bound");
         wl_resource_destroy(resource);
         return;
     }
 
     na->binding = resource;
 
-    zwna_notification_area_v1_send_geometry(na->binding, na->workarea.width, na->workarea.height);
+    zwna_notification_area_v2_send_geometry(na->binding, na->workarea.width, na->workarea.height, na->output->current_scale);
 }
 
 static void
@@ -177,6 +177,8 @@ _weston_notification_area_set_output(struct weston_notification_area *na, struct
     na->workarea.width = na->output->width;
     na->workarea.height = na->output->height;
 #endif /* ! WESTON_HAS_WORKAREA_SUPPORT */
+    if ( na->binding != NULL )
+        zwna_notification_area_v2_send_geometry(na->binding, na->workarea.width, na->workarea.height, na->output->current_scale);
 }
 
 WNA_EXPORT int
@@ -190,7 +192,7 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
 
     na->compositor = compositor;
 
-    if ( wl_global_create(na->compositor->wl_display, &zwna_notification_area_v1_interface, 1, na, _weston_notification_area_bind) == NULL)
+    if ( wl_global_create(na->compositor->wl_display, &zwna_notification_area_v2_interface, 1, na, _weston_notification_area_bind) == NULL)
         return -1;
 
     weston_layer_init(&na->layer, &na->compositor->cursor_layer.link);

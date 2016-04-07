@@ -9,8 +9,8 @@ orbment_plugin_notification_area_la_SOURCES = \
 	$(null)
 
 nodist_orbment_plugin_notification_area_la_SOURCES = \
-	src/notification-area-unstable-v1-protocol.c \
-	src/notification-area-unstable-v1-server-protocol.h \
+	src/notification-area-unstable-v2-protocol.c \
+	src/notification-area-unstable-v2-server-protocol.h \
 	$(null)
 
 orbment_plugin_notification_area_la_CFLAGS = \
@@ -24,4 +24,4 @@ orbment_plugin_notification_area_la_LIBADD = \
 	$(WAYLAND_LIBS) \
 	$(null)
 
-orbment-plugin-notification-area.la %D%/src/orbment_plugin_notification_area_la-wlc-notification-area.lo: src/notification-area-unstable-v1-server-protocol.h
+orbment-plugin-notification-area.la %D%/src/orbment_plugin_notification_area_la-wlc-notification-area.lo: src/notification-area-unstable-v2-server-protocol.h

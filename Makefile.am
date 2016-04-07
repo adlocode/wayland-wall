@@ -33,7 +33,7 @@ AM_LDFLAGS += \
 	$(null)
 
 dist_pkgdata_DATA += \
-	protocol/notification-area-unstable-v1.xml \
+	protocol/notification-area-unstable-v2.xml \
 	$(null)
 
 noarch_pkgconfig_DATA += \
@@ -41,8 +41,8 @@ noarch_pkgconfig_DATA += \
 	$(null)
 
 CLEANFILES += \
-	src/notification-area-unstable-v1-protocol.c \
-	src/notification-area-unstable-v1-server-protocol.h \
+	src/notification-area-unstable-v2-protocol.c \
+	src/notification-area-unstable-v2-server-protocol.h \
 	$(null)
 
 include weston/weston.mk

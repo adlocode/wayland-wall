@@ -28,7 +28,7 @@
 #include <wayland-util.h>
 #include <wlc/wlc.h>
 #include <wlc/wlc-wayland.h>
-#include "notification-area-unstable-v1-server-protocol.h"
+#include "notification-area-unstable-v2-server-protocol.h"
 
 #include "wlc-notification-area.h"
 
@@ -81,7 +81,7 @@ _wlc_notification_area_notification_request_move(struct wl_client *client, struc
         _wlc_notification_area_notification_set_output(notification, notification->na->output);
 }
 
-static const struct zwna_notification_v1_interface wlc_notification_area_notification_implementation = {
+static const struct zwna_notification_v2_interface wlc_notification_area_notification_implementation = {
     .destroy = _wlc_notification_area_request_destroy,
     .move = _wlc_notification_area_notification_request_move,
 };
@@ -108,7 +108,7 @@ _wlc_notification_area_create_notification(struct wl_client *client, struct wl_r
     notification->na = self;
     wl_list_insert(&self->notifications, &notification->link);
 
-    notification->view = wlc_view_from_surface(wlc_resource_from_wl_surface_resource(surface_resource), client, &zwna_notification_v1_interface, &wlc_notification_area_notification_implementation, 1, id, notification);
+    notification->view = wlc_view_from_surface(wlc_resource_from_wl_surface_resource(surface_resource), client, &zwna_notification_v2_interface, &wlc_notification_area_notification_implementation, 1, id, notification);
     if ( notification->view == 0 )
         return;
     wlc_view_set_type(notification->view, WLC_BIT_OVERRIDE_REDIRECT, true);
@@ -116,7 +116,7 @@ _wlc_notification_area_create_notification(struct wl_client *client, struct wl_r
     wlc_view_set_mask(notification->view, 0);
 }
 
-static const struct zwna_notification_area_v1_interface wlc_notification_area_implementation = {
+static const struct zwna_notification_area_v2_interface wlc_notification_area_implementation = {
     .destroy = _wlc_notification_area_destroy,
     .create_notification = _wlc_notification_area_create_notification,
 };
@@ -135,12 +135,12 @@ _wlc_notification_area_bind(struct wl_client *client, void *data, uint32_t versi
     struct wlc_notification_area *self = data;
     struct wl_resource *resource;
 
-    resource = wl_resource_create(client, &zwna_notification_area_v1_interface, version, id);
+    resource = wl_resource_create(client, &zwna_notification_area_v2_interface, version, id);
     wl_resource_set_implementation(resource, &wlc_notification_area_implementation, self, _wlc_notification_area_unbind);
 
     if ( self->binding != NULL )
     {
-        wl_resource_post_error(resource, ZWNA_NOTIFICATION_AREA_V1_ERROR_BOUND, "interface object already bound");
+        wl_resource_post_error(resource, ZWNA_NOTIFICATION_AREA_V2_ERROR_BOUND, "interface object already bound");
         wl_resource_destroy(resource);
         return;
     }
@@ -152,7 +152,7 @@ _wlc_notification_area_bind(struct wl_client *client, void *data, uint32_t versi
         size = &wlc_size_zero;
     else
         size = wlc_output_get_resolution(self->output);
-    zwna_notification_area_v1_send_geometry(self->binding, size->w, size->h);
+    zwna_notification_area_v2_send_geometry(self->binding, size->w, size->h, 1);
 }
 
 struct wlc_notification_area *
@@ -164,13 +164,13 @@ wlc_notification_area_init(void)
 
     wl_list_init(&self->notifications);
 
-    if ( ( self->global = wl_global_create(wlc_get_wl_display(), &zwna_notification_area_v1_interface, 1, self, _wlc_notification_area_bind) ) == NULL )
+    if ( ( self->global = wl_global_create(wlc_get_wl_display(), &zwna_notification_area_v2_interface, 1, self, _wlc_notification_area_bind) ) == NULL )
     {
         free(self);
         return NULL;
     }
     wl_global_destroy(self->global);
-    if ( ( self->global = wl_global_create(wlc_get_wl_display(), &zwna_notification_area_v1_interface, 1, self, _wlc_notification_area_bind) ) == NULL )
+    if ( ( self->global = wl_global_create(wlc_get_wl_display(), &zwna_notification_area_v2_interface, 1, self, _wlc_notification_area_bind) ) == NULL )
     {
         free(self);
         return NULL;
@@ -216,7 +216,7 @@ wlc_notification_area_set_output(struct wlc_notification_area *self, wlc_handle 
             size = &wlc_size_zero;
         else
             size = wlc_output_get_resolution(output);
-        zwna_notification_area_v1_send_geometry(self->binding, size->w, size->h);
+        zwna_notification_area_v2_send_geometry(self->binding, size->w, size->h, 1);
     }
 
     if ( self->output == output )

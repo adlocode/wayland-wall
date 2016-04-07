@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="notification_area_v1">
+<protocol name="notification_area_v2">
     <copyright>
 	Copyright © 2011-2016 Quentin "Sardem FF7" Glidic
 
@@ -22,7 +22,7 @@
 	SOFTWARE.
     </copyright>
 
-    <interface name="zwna_notification_area_v1" version="1">
+    <interface name="zwna_notification_area_v2" version="1">
 	<description summary="singleton for notification daemons">
 	    The object is a singleton global.
 
@@ -72,7 +72,7 @@
 
 		See the wp_notification interface for details.
 	    </description>
-	    <arg name="id" type="new_id" interface="zwna_notification_v1" />
+	    <arg name="id" type="new_id" interface="zwna_notification_v2" />
 	    <arg name="surface" type="object" interface="wl_surface" />
 	</request>
 
@@ -90,10 +90,11 @@
 	    </description>
 	    <arg name="width" type="int" />
 	    <arg name="height" type="int" />
+	    <arg name="scale" type="int" />
 	</event>
     </interface>
 
-    <interface name="zwna_notification_v1" version="1">
+    <interface name="zwna_notification_v2" version="1">
 	<description summary="a notification bubble">
 	    This interface represents a notification bubble.
 

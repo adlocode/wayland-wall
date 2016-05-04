@@ -54,6 +54,7 @@ PKG_NOARCH_INSTALLDIR
 PKG_CHECK_MODULES([WAYLAND], [wayland-server])
 
 # weston plugin
+weston_min_version=1.10.91
 AC_ARG_ENABLE([weston], AS_HELP_STRING([--disable-weston], [Disable Weston plugin]), [], [enable_weston=yes])
 AC_ARG_WITH([westonplugindir], AS_HELP_STRING([--with-westonplugindir=DIR], [Directory for Weston plugins]), [], [with_westonplugindir=yes])
 if test x${enable_weston} = xyes; then
@@ -62,29 +63,8 @@ if test x${enable_weston} = xyes; then
         yes) westonplugindir="`${PKG_CONFIG} --variable=libdir weston`/weston" ;;
         *) westonplugindir="${with_westonplugindir}" ;;
     esac
-    PKG_CHECK_MODULES([WESTON], [weston pixman-1])
+    PKG_CHECK_MODULES([WESTON], [weston >= ${weston_min_version} pixman-1 xkbcommon])
     AC_SUBST([westonplugindir])
-
-    save_CFLAGS=${CFLAGS}
-    CFLAGS="${WESTON_CFLAGS} ${WAYLAND_CFLAGS}"
-    AC_MSG_CHECKING([if Weston has workarea support])
-    AC_COMPILE_IFELSE([
-        AC_LANG_PROGRAM(
-            [[#include <weston/compositor.h>]],
-            [[
-                struct weston_compositor *compositor = NULL;
-                struct weston_output *output = NULL;
-                pixman_rectangle32_t workarea;
-                compositor->shell_interface.get_output_work_area(compositor->shell_interface.shell, output, &workarea);
-            ]]
-        )
-    ], [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([WESTON_HAS_WORKAREA_SUPPORT], [1], [Weston has workarea support])
-    ], [
-        AC_MSG_RESULT([no])
-    ])
-    CFLAGS=${save_CFLAGS}
 fi
 AM_CONDITIONAL([ENABLE_WESTON], [test x${enable_weston} = xyes])
 

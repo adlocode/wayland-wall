@@ -169,14 +169,7 @@ static void
 _weston_notification_area_set_output(struct weston_notification_area *na, struct weston_output *output)
 {
     na->output = output;
-#ifdef WESTON_HAS_WORKAREA_SUPPORT
     na->compositor->shell_interface.get_output_work_area(na->compositor->shell_interface.shell, na->output, &na->workarea);
-#else /* ! WESTON_HAS_WORKAREA_SUPPORT */
-    na->workarea.x = na->output->x;
-    na->workarea.y = na->output->y;
-    na->workarea.width = na->output->width;
-    na->workarea.height = na->output->height;
-#endif /* ! WESTON_HAS_WORKAREA_SUPPORT */
     if ( na->binding != NULL )
         zwna_notification_area_v2_send_geometry(na->binding, na->workarea.width, na->workarea.height, na->output->current_scale);
 }

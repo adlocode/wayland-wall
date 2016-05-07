@@ -26,7 +26,7 @@ AM_CFLAGS += \
 	-I $(builddir)/src/ \
 	$(null)
 
-AM_LDFLAGS += \
+MODULES_LDFLAGS = \
 	-avoid-version \
 	-module \
 	-shared \

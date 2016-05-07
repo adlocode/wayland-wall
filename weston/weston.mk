@@ -17,6 +17,11 @@ weston_notification_area_la_CFLAGS = \
 	$(WAYLAND_CFLAGS) \
 	$(null)
 
+weston_notification_area_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(MODULES_LDFLAGS) \
+	$(null)
+
 weston_notification_area_la_LIBADD = \
 	$(WESTON_LIBS) \
 	$(WAYLAND_LIBS) \

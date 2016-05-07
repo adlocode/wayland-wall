@@ -19,6 +19,11 @@ orbment_plugin_notification_area_la_CFLAGS = \
 	$(WAYLAND_CFLAGS) \
 	$(null)
 
+orbment_plugin_notification_area_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(MODULES_LDFLAGS) \
+	$(null)
+
 orbment_plugin_notification_area_la_LIBADD = \
 	$(ORBMENT_LIBS) \
 	$(WAYLAND_LIBS) \

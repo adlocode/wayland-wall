@@ -8,5 +8,6 @@
 /orbment-plugin-notification-area.la
 
 /pkgconfig/*.pc
+/wlc-notification-area/pkgconfig/*.pc
 
 /local-rules.mk

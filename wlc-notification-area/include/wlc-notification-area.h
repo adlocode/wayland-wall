@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef _WLC_NOTIFICATION_DAEMON_H_
-#define _WLC_NOTIFICATION_DAEMON_H_
+#ifndef _WLC_NOTIFICATION_AREA_H_
+#define _WLC_NOTIFICATION_AREA_H_
 
 #include <wlc/wlc.h>
 
@@ -33,4 +33,4 @@ WLC_PURE wlc_handle wlc_notification_area_get_output(struct wlc_notification_are
 void wlc_notification_area_set_output(struct wlc_notification_area *na, wlc_handle output);
 void wlc_notification_area_view_destroy(struct wlc_notification_area *na, wlc_handle view);
 
-#endif /* _WLC_NOTIFICATION_DAEMON_H_ */
+#endif /* _WLC_NOTIFICATION_AREA_H_ */

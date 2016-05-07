@@ -30,7 +30,7 @@
 #include <wlc/wlc-wayland.h>
 #include "notification-area-unstable-v2-server-protocol.h"
 
-#include "wlc-notification-area.h"
+#include <wlc-notification-area.h>
 
 struct wlc_notification_area {
     struct wl_global *global;

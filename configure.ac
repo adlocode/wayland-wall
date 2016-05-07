@@ -41,10 +41,13 @@ AM_LDFLAGS=""
 #
 
 # package-specific dirs
+pkgincludedir='${includedir}/'${PACKAGE}
 pkgdatadir='${datadir}/'${PACKAGE}
+AC_SUBST([pkgincludedir])
 AC_SUBST([pkgdatadir])
 
 # pkg-config files
+PKG_INSTALLDIR
 PKG_NOARCH_INSTALLDIR
 
 
@@ -68,10 +71,20 @@ if test x${enable_weston} = xyes; then
 fi
 AM_CONDITIONAL([ENABLE_WESTON], [test x${enable_weston} = xyes])
 
+# wlc helper lib
+AC_ARG_ENABLE([wlc], AS_HELP_STRING([--disable-wlc], [Disable WLC helper library]), [], [enable_wlc=yes])
+if test x${enable_wlc} = xyes; then
+    PKG_CHECK_MODULES([WLC], [wlc])
+fi
+AM_CONDITIONAL([ENABLE_WLC], [test x${enable_wlc} = xyes])
+
 # orbment plugin
 AC_ARG_ENABLE([orbment], AS_HELP_STRING([--disable-orbment], [Disable Orbment plugin]), [], [enable_orbment=yes])
 AC_ARG_WITH([orbmentplugindir], AS_HELP_STRING([--with-orbmentplugindir=DIR], [Directory for Orbment plugins]), [], [with_orbmentplugindir=yes])
 if test x${enable_orbment} = xyes; then
+    if test x${enable_wlc} = xno; then
+        AC_MSG_ERROR([*** Orbment plugin requires WLC helper library, please use --enable-wlc])
+    fi
     case "${with_orbmentplugindir}" in
         no|"") AC_MSG_ERROR([*** You must define orbmentplugindir when compiling Orbment plugin]) ;;
         yes) orbmentplugindir='${libdir}/orbment' ;;
@@ -95,12 +108,16 @@ AC_SUBST([shrext_cmds])
 
 AC_CONFIG_FILES([
     pkgconfig/wayland-notification-area.pc
+    wlc-notification-area/pkgconfig/wlc-notification-area.pc
     Makefile
 ])
 AC_OUTPUT
 
 AC_MSG_RESULT([
     ${PACKAGE_NAME} ${PACKAGE_VERSION}
+
+    Helper libraries:
+        WLC: ${enable_wlc}
 
     Plugins:
         Weston: ${enable_weston}

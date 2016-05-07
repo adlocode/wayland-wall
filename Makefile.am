@@ -32,6 +32,10 @@ MODULES_LDFLAGS = \
 	-shared \
 	$(null)
 
+lib_LTLIBRARIES =
+pkginclude_HEADERS =
+pkgconfig_DATA =
+
 dist_pkgdata_DATA += \
 	protocol/notification-area-unstable-v2.xml \
 	$(null)
@@ -46,6 +50,7 @@ CLEANFILES += \
 	$(null)
 
 include weston/weston.mk
+include wlc-notification-area/wlc-notification-area.mk
 include orbment/orbment.mk
 
 # Wayland protocol code generation rules
@@ -72,11 +77,13 @@ wna_remove_so_from_la = $(if $(strip $($(1)_LTLIBRARIES)),( cd $(DESTDIR)$($(1)d
 
 # *.la files cleanup
 la-files-install-hook:
+	$(call wna_remove_la,lib)
 	$(call wna_remove_la,westonplugin)
 	$(call wna_remove_la,orbmentplugin)
 
 # Remove shared object files at uninstall since
 # we remove *.la files at install
 la-files-uninstall-hook:
+	$(call wna_remove_so_from_la,lib)
 	$(call wna_remove_so_from_la,westonplugin)
 	$(call wna_remove_so_from_la,orbmentplugin)

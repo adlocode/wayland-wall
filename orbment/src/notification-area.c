@@ -26,7 +26,7 @@
 
 #include <wayland-util.h>
 #include <orbment/plugin.h>
-#include "wlc-notification-area.h"
+#include <wlc-notification-area.h>
 
 static struct {
     plugin_h self;

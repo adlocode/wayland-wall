@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+pkgincludedir=@pkgincludedir@
+
+Name: wlc-notification-area
+Description: Wayland notification area - WLC helper library
+Version: @VERSION@
+Requires: wlc
+Cflags: -I${pkgincludedir}
+Libs: -lwlc-notification-area

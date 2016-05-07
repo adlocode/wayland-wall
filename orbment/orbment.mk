@@ -4,13 +4,6 @@ endif
 
 orbment_plugin_notification_area_la_SOURCES = \
 	%D%/src/notification-area.c \
-	%D%/src/wlc-notification-area.h \
-	%D%/src/wlc-notification-area.c \
-	$(null)
-
-nodist_orbment_plugin_notification_area_la_SOURCES = \
-	src/notification-area-unstable-v2-protocol.c \
-	src/notification-area-unstable-v2-server-protocol.h \
 	$(null)
 
 orbment_plugin_notification_area_la_CFLAGS = \
@@ -25,6 +18,7 @@ orbment_plugin_notification_area_la_LDFLAGS = \
 	$(null)
 
 orbment_plugin_notification_area_la_LIBADD = \
+	libwlc-notification-area.la \
 	$(ORBMENT_LIBS) \
 	$(WAYLAND_LIBS) \
 	$(null)

@@ -9,7 +9,7 @@ This project will try to provide a compositor implementation for plugin-based co
 Releases
 --------
 
-You can find releases tarballs [here](http://download.tuxfamily.org/eventd/wayland-notification-area/).
+You can find releases tarballs [here](https://www.eventd.org/download/wayland-notification-area/).
 
 
 Compositor implementations
@@ -24,4 +24,4 @@ For now, these compositors are supported:
 Client implementations
 ----------------------
 
-* [eventd](http://www.eventd.org/)
+* [eventd](https://www.eventd.org/)

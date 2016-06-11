@@ -66,7 +66,7 @@ if test x${enable_weston} = xyes; then
         yes) westonplugindir="`${PKG_CONFIG} --variable=libdir weston`/weston" ;;
         *) westonplugindir="${with_westonplugindir}" ;;
     esac
-    PKG_CHECK_MODULES([WESTON], [weston >= ${weston_min_version} pixman-1 xkbcommon])
+    PKG_CHECK_MODULES([WESTON], [libweston-0 >= ${weston_min_version} pixman-1 xkbcommon])
     AC_SUBST([westonplugindir])
 fi
 AM_CONDITIONAL([ENABLE_WESTON], [test x${enable_weston} = xyes])

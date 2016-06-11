@@ -36,7 +36,7 @@
 #include <sys/types.h>
 
 #include <wayland-server.h>
-#include <weston/compositor.h>
+#include <compositor.h>
 #include "notification-area-unstable-v2-server-protocol.h"
 
 struct weston_notification_area {

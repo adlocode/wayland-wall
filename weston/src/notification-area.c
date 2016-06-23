@@ -136,6 +136,23 @@ static const struct zwna_notification_area_v2_interface weston_notification_area
 };
 
 static void
+_weston_notification_area_set_output(struct weston_notification_area *na, struct weston_output *output)
+{
+    pixman_rectangle32_t workarea = { 0, 0, 0, 0 };
+    na->output = output;
+    if ( na->output != NULL )
+        na->compositor->shell_interface.get_output_work_area(na->compositor->shell_interface.shell, na->output, &workarea);
+
+    if ( ( na->workarea.x == workarea.x ) && ( na->workarea.y == workarea.y ) && ( na->workarea.width == workarea.width ) && ( na->workarea.height == workarea.height ) )
+        return;
+
+    na->workarea = workarea;
+
+    if ( na->binding != NULL )
+        zwna_notification_area_v2_send_geometry(na->binding, na->workarea.width, na->workarea.height, na->output->current_scale);
+}
+
+static void
 _weston_notification_area_unbind(struct wl_resource *resource)
 {
     struct weston_notification_area *na = wl_resource_get_user_data(resource);
@@ -161,15 +178,9 @@ _weston_notification_area_bind(struct wl_client *client, void *data, uint32_t ve
 
     na->binding = resource;
 
-    zwna_notification_area_v2_send_geometry(na->binding, na->workarea.width, na->workarea.height, na->output->current_scale);
-}
-
-static void
-_weston_notification_area_set_output(struct weston_notification_area *na, struct weston_output *output)
-{
-    na->output = output;
-    na->compositor->shell_interface.get_output_work_area(na->compositor->shell_interface.shell, na->output, &na->workarea);
-    if ( na->binding != NULL )
+    if ( na->output == NULL )
+        _weston_notification_area_set_output(na, _weston_notification_area_get_default_output(na));
+    else
         zwna_notification_area_v2_send_geometry(na->binding, na->workarea.width, na->workarea.height, na->output->current_scale);
 }
 
@@ -188,8 +199,6 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
         return -1;
 
     weston_layer_init(&na->layer, &na->compositor->cursor_layer.link);
-
-    _weston_notification_area_set_output(na, _weston_notification_area_get_default_output(na));
 
     return 0;
 }

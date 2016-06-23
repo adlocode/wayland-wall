@@ -63,6 +63,9 @@ _weston_notification_area_request_destroy(struct wl_client *client, struct wl_re
 static struct weston_output *
 _weston_notification_area_get_default_output(struct weston_notification_area *na)
 {
+    if ( wl_list_empty(&na->compositor->output_list) )
+        return NULL;
+
     return wl_container_of(na->compositor->output_list.next, na->output, link);
 }
 

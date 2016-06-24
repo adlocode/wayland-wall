@@ -45,6 +45,9 @@ struct weston_notification_area {
     struct weston_layer layer;
     struct weston_output *output;
     pixman_rectangle32_t workarea;
+    struct wl_listener output_created_listener;
+    struct wl_listener output_destroyed_listener;
+    struct wl_listener output_moved_listener;
 };
 
 struct weston_notification_area_notification {
@@ -184,6 +187,35 @@ _weston_notification_area_bind(struct wl_client *client, void *data, uint32_t ve
         zwna_notification_area_v2_send_geometry(na->binding, na->workarea.width, na->workarea.height, na->output->current_scale);
 }
 
+static void
+_weston_notification_area_output_created(struct wl_listener *listener, void *data)
+{
+    struct weston_notification_area *na = wl_container_of(listener, na, output_created_listener);
+
+    if ( na->output == NULL )
+        _weston_notification_area_set_output(na, _weston_notification_area_get_default_output(na));
+}
+
+static void
+_weston_notification_area_output_destroyed(struct wl_listener *listener, void *data)
+{
+    struct weston_notification_area *na = wl_container_of(listener, na, output_created_listener);
+    struct weston_output *output = data;
+
+    if ( na->output == output )
+        _weston_notification_area_set_output(na, _weston_notification_area_get_default_output(na));
+}
+
+static void
+_weston_notification_area_output_moved(struct wl_listener *listener, void *data)
+{
+    struct weston_notification_area *na = wl_container_of(listener, na, output_created_listener);
+    struct weston_output *output = data;
+
+    if ( na->output == output )
+        _weston_notification_area_set_output(na, na->output);
+}
+
 WNA_EXPORT int
 module_init(struct weston_compositor *compositor, int *argc, char *argv[])
 {
@@ -194,6 +226,13 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
         return -1;
 
     na->compositor = compositor;
+
+    na->output_created_listener.notify = _weston_notification_area_output_created;
+    na->output_destroyed_listener.notify = _weston_notification_area_output_destroyed;
+    na->output_moved_listener.notify = _weston_notification_area_output_moved;
+    wl_signal_add(&na->compositor->output_created_signal, &na->output_created_listener);
+    wl_signal_add(&na->compositor->output_destroyed_signal, &na->output_destroyed_listener);
+    wl_signal_add(&na->compositor->output_moved_signal, &na->output_moved_listener);
 
     if ( wl_global_create(na->compositor->wl_display, &zwna_notification_area_v2_interface, 1, na, _weston_notification_area_bind) == NULL)
         return -1;

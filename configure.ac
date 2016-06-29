@@ -57,7 +57,7 @@ PKG_NOARCH_INSTALLDIR
 PKG_CHECK_MODULES([WAYLAND], [wayland-server])
 
 # weston plugin
-weston_min_version=1.10.91
+weston_min_version=1.11.90
 AC_ARG_ENABLE([weston], AS_HELP_STRING([--disable-weston], [Disable Weston plugin]), [], [enable_weston=yes])
 AC_ARG_WITH([westonplugindir], AS_HELP_STRING([--with-westonplugindir=DIR], [Directory for Weston plugins]), [], [with_westonplugindir=yes])
 if test x${enable_weston} = xyes; then

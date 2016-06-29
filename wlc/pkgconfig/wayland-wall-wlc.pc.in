@@ -4,9 +4,9 @@ libdir=@libdir@
 includedir=@includedir@
 pkgincludedir=@pkgincludedir@
 
-Name: wlc-notification-area
-Description: Wayland notification area - WLC helper library
+Name: wayland-wall-wlc
+Description: Wayland Wall - WLC helper library
 Version: @VERSION@
-Requires: wlc
+Requires.private: wlc
 Cflags: -I${pkgincludedir}
-Libs: -lwlc-notification-area
+Libs: -lwayland-wall-wlc

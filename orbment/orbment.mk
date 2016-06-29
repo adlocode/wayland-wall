@@ -22,5 +22,3 @@ orbment_plugin_notification_area_la_LIBADD = \
 	$(ORBMENT_LIBS) \
 	$(WAYLAND_LIBS) \
 	$(null)
-
-orbment-plugin-notification-area.la %D%/src/orbment_plugin_notification_area_la-wlc-notification-area.lo: src/notification-area-unstable-v2-server-protocol.h

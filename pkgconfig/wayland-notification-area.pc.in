@@ -1,9 +1,0 @@
-prefix=@prefix@
-datarootdir=@datarootdir@
-datadir=@datadir@
-
-pkgdatadir=@pkgdatadir@
-
-Name: wayland-notification-area
-Description: Wayland notification area
-Version: @VERSION@

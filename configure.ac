@@ -1,8 +1,8 @@
 AC_PREREQ([2.65])
-AC_INIT([wayland-notification-area],[6])
+AC_INIT([wayland-wall],[6])
 
 AC_CONFIG_HEADERS([src/config.h])
-AC_CONFIG_SRCDIR([protocol/notification-area-unstable-v2.xml])
+AC_CONFIG_SRCDIR([pkgconfig/wayland-wall.pc.in])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.aux])
 
@@ -29,7 +29,7 @@ AC_SUBST([GETTEXT_PACKAGE])
 
 
 
-AC_DEFINE([WNA_EXPORT], [__attribute__((visibility("default")))], [Export symbol])
+AC_DEFINE([WW_EXPORT], [__attribute__((visibility("default")))], [Export symbol])
 
 AM_CFLAGS="-fvisibility=hidden -Wall -Wextra -Wformat=2 -Wno-unused-parameter -Wno-missing-field-initializers"
 AM_CPPFLAGS=""
@@ -107,8 +107,8 @@ AM_SUBST_NOTMAKE([LIBS])
 AC_SUBST([shrext_cmds])
 
 AC_CONFIG_FILES([
-    pkgconfig/wayland-notification-area.pc
-    wlc-notification-area/pkgconfig/wlc-notification-area.pc
+    pkgconfig/wayland-wall.pc
+    wlc/pkgconfig/wayland-wall-wlc.pc
     Makefile
 ])
 AC_OUTPUT

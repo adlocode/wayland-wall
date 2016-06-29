@@ -7,8 +7,8 @@ weston_notification_area_la_SOURCES = \
 	$(null)
 
 nodist_weston_notification_area_la_SOURCES = \
-	src/notification-area-unstable-v2-protocol.c \
-	src/notification-area-unstable-v2-server-protocol.h \
+	src/notification-area-unstable-v1-protocol.c \
+	src/notification-area-unstable-v1-server-protocol.h \
 	$(null)
 
 weston_notification_area_la_CFLAGS = \
@@ -27,4 +27,4 @@ weston_notification_area_la_LIBADD = \
 	$(WAYLAND_LIBS) \
 	$(null)
 
-weston-notification-area.la %D%/src/weston_notification_area_la-notification-area.lo: src/notification-area-unstable-v2-server-protocol.h
+weston-notification-area.la %D%/src/weston_notification_area_la-notification-area.lo: src/notification-area-unstable-v1-server-protocol.h

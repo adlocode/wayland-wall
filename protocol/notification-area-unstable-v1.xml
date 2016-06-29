@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="notification_area_v2">
+<protocol name="notification_area_v1">
     <copyright>
 	Copyright © 2011-2016 Quentin "Sardem FF7" Glidic
 
@@ -22,7 +22,7 @@
 	SOFTWARE.
     </copyright>
 
-    <interface name="zwna_notification_area_v2" version="1">
+    <interface name="zww_notification_area_v1" version="1">
 	<description summary="singleton for notification daemons">
 	    The object is a singleton global.
 
@@ -49,18 +49,18 @@
 	    area to display notifications.
 
 	    The notification daemon can will create notifications using
-	    the wp_notification_area.create_notification request, then move it
-	    with the wp_notification.move request to achieve the desired layout.
+	    the ww_notification_area.create_notification request, then move it
+	    with the ww_notification.move request to achieve the desired layout.
 	</description>
 
 	<request name="destroy" type="destructor" />
 
 	<enum name="error">
-	    <description summary="wp_notification_area error values">
+	    <description summary="ww_notification_area error values">
 		These errors can be emitted in response to
-		wl_notification_area requests.
+		ww_notification_area requests.
 	    </description>
-	    <entry name="bound" value="0" summary="wp_notification_area is already bound"/>
+	    <entry name="bound" value="0" summary="ww_notification_area is already bound"/>
 	    <entry name="role" value="1" summary="given wl_surface has another role"/>
 	</enum>
 
@@ -70,9 +70,9 @@
 		If the wl_surface already has another role, it raises
 		a protocol error (role).
 
-		See the wp_notification interface for details.
+		See the ww_notification interface for details.
 	    </description>
-	    <arg name="id" type="new_id" interface="zwna_notification_v2" />
+	    <arg name="id" type="new_id" interface="zww_notification_v1" />
 	    <arg name="surface" type="object" interface="wl_surface" />
 	</request>
 
@@ -94,7 +94,7 @@
 	</event>
     </interface>
 
-    <interface name="zwna_notification_v2" version="1">
+    <interface name="zww_notification_v1" version="1">
 	<description summary="a notification bubble">
 	    This interface represents a notification bubble.
 
@@ -104,8 +104,8 @@
 	</description>
 
 	<enum name="error">
-	    <description summary="wp_notification error values">
-		These errors can be emitted in response to wl_notification requests.
+	    <description summary="ww_notification error values">
+		These errors can be emitted in response to ww_notification requests.
 	    </description>
 	    <entry name="outside_area" value="0" summary="notification would be rendered outside the area"/>
 	</enum>

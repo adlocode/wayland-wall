@@ -26,49 +26,49 @@
 
 #include <wayland-util.h>
 #include <orbment/plugin.h>
-#include <wlc-notification-area.h>
+#include <wayland-wall-wlc.h>
 
 static struct {
     plugin_h self;
-    struct wlc_notification_area *na;
+    struct ww_wlc_notification_area *na;
 } plugin;
 
 static bool
-_wlc_notification_area_output_created(wlc_handle output)
+_ww_wlc_notification_area_output_created(wlc_handle output)
 {
-    if ( wlc_notification_area_get_output(plugin.na) == 0 )
-        wlc_notification_area_set_output(plugin.na, output);
+    if ( ww_wlc_notification_area_get_output(plugin.na) == 0 )
+        ww_wlc_notification_area_set_output(plugin.na, output);
 
     return true;
 }
 
 static void
-_wlc_notification_area_output_destroyed(wlc_handle output)
+_ww_wlc_notification_area_output_destroyed(wlc_handle output)
 {
-    if ( wlc_notification_area_get_output(plugin.na) != output )
+    if ( ww_wlc_notification_area_get_output(plugin.na) != output )
         return;
 
     const wlc_handle *outputs;
     size_t size;
     outputs = wlc_get_outputs(&size);
 
-    wlc_notification_area_set_output(plugin.na, ( size > 0 ) ? outputs[0] : 0);
+    ww_wlc_notification_area_set_output(plugin.na, ( size > 0 ) ? outputs[0] : 0);
 }
 
 static void
-_wlc_notification_area_output_resolution(wlc_handle output, const struct wlc_size *from, const struct wlc_size *to)
+_ww_wlc_notification_area_output_resolution(wlc_handle output, const struct wlc_size *from, const struct wlc_size *to)
 {
     (void) from;
     (void) to;
 
-    if ( wlc_notification_area_get_output(plugin.na) != output )
+    if ( ww_wlc_notification_area_get_output(plugin.na) != output )
         return;
 
-    wlc_notification_area_set_output(plugin.na, output);
+    ww_wlc_notification_area_set_output(plugin.na, output);
 }
 
 static void
-_wlc_notification_area_output_focus(wlc_handle output, bool focused)
+_ww_wlc_notification_area_output_focus(wlc_handle output, bool focused)
 {
     if ( ! focused )
         return;
@@ -76,27 +76,27 @@ _wlc_notification_area_output_focus(wlc_handle output, bool focused)
     if ( ! false )
         return;
 
-    wlc_notification_area_set_output(plugin.na, output);
+    ww_wlc_notification_area_set_output(plugin.na, output);
 }
 
 static void
-_wlc_notification_area_view_destroyed(wlc_handle view)
+_ww_wlc_notification_area_view_destroyed(wlc_handle view)
 {
-    wlc_notification_area_view_destroy(plugin.na, view);
+    ww_wlc_notification_area_view_destroy(plugin.na, view);
 }
 
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
-WNA_EXPORT
+WW_EXPORT
 PCONST void
 plugin_deinit(plugin_h self)
 {
     (void) self;
 
-    wlc_notification_area_uninit(plugin.na);
+    ww_wlc_notification_area_uninit(plugin.na);
 }
 
-WNA_EXPORT
+WW_EXPORT
 bool
 plugin_init(plugin_h p)
 {
@@ -110,28 +110,28 @@ plugin_init(plugin_h p)
     if ( ( add_hook = import_method(plugin.self, orbment, "add_hook", "b(h,c[],fun)|1") ) == NULL)
         return false;
 
-    if ( ( plugin.na = wlc_notification_area_init() ) == NULL )
+    if ( ( plugin.na = ww_wlc_notification_area_init() ) == NULL )
         return false;
 
-    if ( ! add_hook(plugin.self, "output.created", FUN(_wlc_notification_area_output_created, "b(h)|1")) )
+    if ( ! add_hook(plugin.self, "output.created", FUN(_ww_wlc_notification_area_output_created, "b(h)|1")) )
         return false;
 
-    if ( ! add_hook(plugin.self, "output.destroyed", FUN(_wlc_notification_area_output_destroyed, "v(h)|1")) )
+    if ( ! add_hook(plugin.self, "output.destroyed", FUN(_ww_wlc_notification_area_output_destroyed, "v(h)|1")) )
         return false;
 
-    if ( ! add_hook(plugin.self, "output.resolution", FUN(_wlc_notification_area_output_resolution, "v(h,*,*)|1")) )
+    if ( ! add_hook(plugin.self, "output.resolution", FUN(_ww_wlc_notification_area_output_resolution, "v(h,*,*)|1")) )
         return false;
 
-    if ( ! add_hook(plugin.self, "output.focus", FUN(_wlc_notification_area_output_focus, "v(h,b)|1")) )
+    if ( ! add_hook(plugin.self, "output.focus", FUN(_ww_wlc_notification_area_output_focus, "v(h,b)|1")) )
         return false;
 
-    if ( ! add_hook(plugin.self, "view.destroyed", FUN(_wlc_notification_area_view_destroyed, "v(h)|1")) )
+    if ( ! add_hook(plugin.self, "view.destroyed", FUN(_ww_wlc_notification_area_view_destroyed, "v(h)|1")) )
         return false;
 
     return true;
 }
 
-WNA_EXPORT
+WW_EXPORT
 PCONST const struct plugin_info*
 plugin_register(void)
 {

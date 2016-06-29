@@ -25,12 +25,12 @@
 
 #include <wlc/wlc.h>
 
-struct wlc_notification_area;
+struct ww_wlc_notification_area;
 
-struct wlc_notification_area *wlc_notification_area_init(void);
-void wlc_notification_area_uninit(struct wlc_notification_area *na);
-WLC_PURE wlc_handle wlc_notification_area_get_output(struct wlc_notification_area *na);
-void wlc_notification_area_set_output(struct wlc_notification_area *na, wlc_handle output);
-void wlc_notification_area_view_destroy(struct wlc_notification_area *na, wlc_handle view);
+struct ww_wlc_notification_area *ww_wlc_notification_area_init(void);
+void ww_wlc_notification_area_uninit(struct ww_wlc_notification_area *na);
+WLC_PURE wlc_handle ww_wlc_notification_area_get_output(struct ww_wlc_notification_area *na);
+void ww_wlc_notification_area_set_output(struct ww_wlc_notification_area *na, wlc_handle output);
+void ww_wlc_notification_area_view_destroy(struct ww_wlc_notification_area *na, wlc_handle view);
 
 #endif /* _WLC_NOTIFICATION_AREA_H_ */

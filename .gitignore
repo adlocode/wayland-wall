@@ -1,14 +1,7 @@
-/src/config.h.in
-/src/config.h
+*-protocol.c
+*-server-protocol.h
+*-client-protocol.h
 
-/src/*-protocol.c
-/src/*-server-protocol.h
-/src/*-client-protocol.h
-
-/weston-notification-area.la
-/orbment-plugin-notification-area.la
-
-/pkgconfig/*.pc
-/wlc/pkgconfig/*.pc
+/wayland-wall.pc
 
 /local-rules.mk

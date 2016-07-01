@@ -3,7 +3,7 @@ Wayland Wall
 
 Wayland Wall is a collection of protocols, called bricks, to create a complete desktop experience for Wayland.
 
-This project will try to provide a compositor implementation for plugin-based compositors.
+The idea is copied from [wayland-protocols](https://cgit.freedesktop.org/wayland/wayland-protocols/) but for protocols less likely to make it to the major DEs.
 
 
 Releases
@@ -26,9 +26,9 @@ Compositor implementations
 
 For now, these compositors are supported, with these protocols:
 
-* Weston
+* Weston, in [weston-wall](https://github.com/wayland-wall/weston-wall)
     * notification-area
-* Orbment
+* Orbment, in [orbment-wall](https://github.com/wayland-wall/orbment-wall)
     * notification-area
 
 

@@ -5,3 +5,8 @@
 /wayland-wall.pc
 
 /local-rules.mk
+
+/src/config.h.in
+/src/config.h
+
+/ww-background

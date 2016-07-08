@@ -27,13 +27,17 @@ Compositor implementations
 For now, these compositors are supported, with these protocols:
 
 * Weston, in [weston-wall](https://github.com/wayland-wall/weston-wall)
+    * background
     * notification-area
 * Orbment, in [orbment-wall](https://github.com/wayland-wall/orbment-wall)
+    * background
     * notification-area
 
 
 Client implementations
 ----------------------
 
+* background:
+    * ww-background, a simple demo (build Wayland Wall with `--enable-clients` and optionally `--enable-images`)
 * notification-area:
     * [eventd](https://www.eventd.org/)

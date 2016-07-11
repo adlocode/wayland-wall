@@ -793,7 +793,6 @@ main(int argc, char *argv[])
 
             if ( argc > 3 )
             {
-                int32_t
                 self->width = strtol(argv[2], NULL, 0);
                 self->height = strtol(argv[3], NULL, 0);
             }

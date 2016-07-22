@@ -145,11 +145,17 @@ static const struct wl_buffer_listener _ww_background_buffer_listener = {
 static void
 _ww_background_surface_update(WwBackgroundSurface *self, WwBackgroundBuffer *buffer)
 {
+    struct wl_region *region;
+
     wl_surface_damage(self->surface, 0, 0, self->width, self->height);
     wl_surface_attach(self->surface, buffer->buffer, 0, 0);
     if ( wl_surface_get_version(self->surface) >= WL_SURFACE_SET_BUFFER_SCALE_SINCE_VERSION )
         wl_surface_set_buffer_scale(self->surface, self->output->scale);
+    region = wl_compositor_create_region(self->output->context->compositor);
+    wl_region_add(region, 0, 0, self->width, self->height);
+    wl_surface_set_opaque_region(self->surface, region);
     wl_surface_commit(self->surface);
+    wl_region_destroy(region);
 
     zww_background_v1_set_background(self->output->context->background, self->surface, self->output->output, self->output->context->fit_method);
 }

@@ -74,8 +74,7 @@
 #define CLAMP(x, min, max) (MAX((min), MIN((max), (x))))
 #endif
 
-#define _ww_log(type, file, line, format, ...) fprintf(stderr, " [" file ":" #line "] " type " " format "\n", ## __VA_ARGS__)
-#define ww_log(type, format, ...) _ww_log(type, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define ww_log(type, format, ...) fprintf(stderr, "[%s:%d] %s() " type " " format "\n", __FILE__, __LINE__, __func__, ## __VA_ARGS__)
 #define ww_warning(format, ...) ww_log("WARN", format, ## __VA_ARGS__)
 
 #define ww_new0(type, n) ((type *)calloc(sizeof(type), n))

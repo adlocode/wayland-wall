@@ -42,11 +42,11 @@
 		These positions refer to edges of a rectangle work area.
 
 	    </description>
-	    <entry name="default" value="0" summary="" />
-	    <entry name="top" value="1" summary="" />
-	    <entry name="bottom" value="2" summary="" />
-	    <entry name="left" value="3" summary="" />
-	    <entry name="right" value="4" summary="" />
+	    <entry name="default" value="0" summary="the compositor will select an appropriate position" />
+	    <entry name="top" value="1" summary="the dock will be at the top of the output" />
+	    <entry name="bottom" value="2" summary="the dock will be at the top of the output" />
+	    <entry name="left" value="3" summary="the dock will be at the top of the output" />
+	    <entry name="right" value="4" summary="the dock will be at the top of the output" />
 	</enum>
 
 	<request name="create_dock">

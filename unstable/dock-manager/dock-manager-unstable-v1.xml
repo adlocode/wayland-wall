@@ -50,7 +50,7 @@
 	</enum>
 
 	<request name="create_dock">
-	    <description summary="create a notification from a wl_surface">
+	    <description summary="create a dock from a wl_surface">
 		This gives the wl_surface the role of a dock.
 		If the wl_surface already has another role, it raises
 		a protocol error (role).

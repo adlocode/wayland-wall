@@ -955,7 +955,7 @@ main(int argc, char *argv[])
     }
 
     WwDock *dock;
-    time_t current, next;
+    time_t current;
     current = time(NULL);
     dock = _ww_dock_create(self, current);
     if ( dock == NULL )
@@ -968,47 +968,6 @@ main(int argc, char *argv[])
         ret = wl_display_dispatch(self->display);
     }
     while ( ret > 0 );
-    if ( ret < 0 )
-        ww_warning("Couldn’t dispatch events: %s", strerror(errno));
-
-    return 0;
-
-    struct pollfd fd;
-    fd.fd = wl_display_get_fd(self->display);
-    fd.events = POLLIN | POLLERR | POLLHUP;
-    current = time(NULL);
-    next = current + 1;
-    while ( true )
-    {
-        while (wl_display_prepare_read(self->display) < 0)
-            wl_display_dispatch_pending(self->display);
-        wl_display_flush(self->display);
-
-        ret = poll(&fd, 1, (next - current) * 1000);
-        if ( ret < 0 )
-            break;
-        if ( fd.revents & ( POLLERR | POLLHUP ) )
-            break;
-
-        if ( fd.revents & POLLIN )
-        {
-            ret = wl_display_read_events(self->display);
-            if ( ret < 0 )
-                break;
-        }
-        else
-            wl_display_cancel_read(self->display);
-
-        wl_display_dispatch_pending(self->display);
-        current = time(NULL);
-        if ( current >= next )
-        {
-            _ww_dock_trigger_drawing(dock, current);
-            next = current + 1;
-        }
-    }
-    wl_display_cancel_read(self->display);
-    ww_warning("RET = %d", ret);
     if ( ret < 0 )
         ww_warning("Couldn’t dispatch events: %s", strerror(errno));
 

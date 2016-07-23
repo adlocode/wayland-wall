@@ -44,6 +44,7 @@ PKG_NOARCH_INSTALLDIR
 wayland_min_version=1.9.91
 AC_ARG_ENABLE([clients], AS_HELP_STRING([--enable-clients], [Enable simple clients for some of the protocols]), [], [enable_clients=no])
 AC_ARG_ENABLE([images], AS_HELP_STRING([--enable-images], [Enable images support in clients]), [], [enable_images=no])
+AC_ARG_ENABLE([text], AS_HELP_STRING([--enable-text], [Enable text support in clients]), [], [enable_text=no])
 if test x${enable_clients} = xyes; then
     if test -z "${WAYLAND_SCANNER}"; then
         AC_MSG_ERROR([wayland-scanner not found])
@@ -54,12 +55,18 @@ if test x${enable_clients} = xyes; then
         AC_MSG_ERROR([*** mmap() function is required to build clients])
     fi
     PKG_CHECK_MODULES([WAYLAND], [wayland-client >= ${wayland_min_version} wayland-cursor])
+    PKG_CHECK_MODULES([CAIRO], [cairo])
     if test x${enable_images} = xyes; then
         PKG_CHECK_MODULES([GDK_PIXBUF], [gdk-pixbuf-2.0])
         AC_DEFINE([ENABLE_IMAGES], [1], [Images support])
     fi
+    if test x${enable_text} = xyes; then
+        PKG_CHECK_MODULES([PANGO], [pango pangocairo])
+        AC_DEFINE([ENABLE_TEXT], [1], [Text support])
+    fi
 fi
 AM_CONDITIONAL([ENABLE_CLIENTS], [test x${enable_clients} = xyes])
+AM_CONDITIONAL([ENABLE_TEXT], [test x${enable_text} = xyes])
 
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_CPPFLAGS])
@@ -79,4 +86,5 @@ AC_MSG_RESULT([
 
     Simple clients: ${enable_clients}
         Images support: ${enable_images}
+        Text support: ${enable_text}
 ])

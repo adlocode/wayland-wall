@@ -3,6 +3,7 @@ AM_MAKEFLAGS = --no-print-directory
 
 unstable_protocols = \
 	unstable/background/background-unstable-v1.xml \
+	unstable/dock-manager/dock-manager-unstable-v1.xml \
 	unstable/notification-area/notification-area-unstable-v1.xml \
 	$(null)
 
@@ -53,6 +54,33 @@ ww_background_LDADD = \
 	$(null)
 
 ww-background src/ww_background-background.o: src/unstable/background/background-unstable-v1-client-protocol.h
+
+if ENABLE_TEXT
+
+bin_PROGRAMS += ww-dock
+
+ww_dock_SOURCES = \
+	src/helpers.h \
+	src/dock.c \
+	src/unstable/dock-manager/dock-manager-unstable-v1-protocol.c \
+	$(null)
+
+ww_dock_CFLAGS = \
+	$(AM_CFLAGS) \
+	$(PANGO_CFLAGS) \
+	$(CAIRO_CFLAGS) \
+	$(WAYLAND_CFLAGS) \
+	$(null)
+
+ww_dock_LDADD = \
+	$(PANGO_LIBS) \
+	$(CAIRO_LIBS) \
+	$(WAYLAND_LIBS) \
+	$(null)
+
+ww-dock src/ww_dock-dock.o: src/unstable/dock-manager/dock-manager-unstable-v1-client-protocol.h
+
+endif
 
 endif
 

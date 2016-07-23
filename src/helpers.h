@@ -63,11 +63,15 @@
 #include <wayland-client.h>
 
 #ifndef MIN
-#define MIN(a, b) ((a < b) ? a : b)
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #ifndef MAX
-#define MAX(a, b) ((a > b) ? a : b)
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef CLAMP
+#define CLAMP(x, min, max) (MAX((min), MIN((max), (x))))
 #endif
 
 #define _ww_log(type, file, line, format, ...) fprintf(stderr, " [" file ":" #line "] " type " " format "\n", ## __VA_ARGS__)

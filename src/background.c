@@ -131,7 +131,6 @@ _ww_background_buffer_release(void *data, struct wl_buffer *buf)
     if ( self->released )
     {
         wl_buffer_destroy(self->buffer);
-        munmap(self->data, self->size);
         free(self);
     }
     else

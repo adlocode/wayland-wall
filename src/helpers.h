@@ -52,13 +52,12 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif /* HAVE_STDBOOL_H */
-#ifdef HAVE_STDINT_H
+#ifdef HAVE_STDBOOL_H
 #include <stdbool.h>
 #endif /* HAVE_STDBOOL_H */
 #ifdef HAVE_ASSERT_H
 #include <assert.h>
 #endif /* HAVE_ASSERT_H */
-#include <assert.h>
 
 #include <wayland-client.h>
 

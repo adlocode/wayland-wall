@@ -53,13 +53,6 @@ typedef enum {
 } WwDockGlobalName;
 
 typedef struct {
-    double r;
-    double g;
-    double b;
-    double a;
-} WwDockColour;
-
-typedef struct {
     char runtime_dir[PATH_MAX];
     struct wl_display *display;
     struct wl_registry *registry;
@@ -79,8 +72,8 @@ typedef struct {
     } cursor;
     struct wl_list seats;
     struct wl_list outputs;
-    WwDockColour background_colour;
-    WwDockColour text_colour;
+    WwColour background_colour;
+    WwColour text_colour;
 } WwDockContext;
 
 typedef struct {
@@ -894,64 +887,6 @@ _ww_dock_disconnect(WwDockContext *self)
     self->display = NULL;
 }
 
-static void
-_ww_dock_parse_colour(char *spec, WwDockColour *colour)
-{
-    if ( spec[0] != '#' )
-        return;
-    ++spec;
-
-    char sr[3] = { '\0', '\0', '\0' };
-    char sg[3] = { '\0', '\0', '\0' };
-    char sb[3] = { '\0', '\0', '\0' };
-    char sa[3] = { 'f', 'f', '\0' };
-
-    switch ( strlen(spec) )
-    {
-    case 8:
-        sa[0] = spec[6];
-        sa[1] = spec[7];
-    case 6:
-        sr[0] = spec[0];
-        sr[1] = spec[1];
-        sg[0] = spec[2];
-        sg[1] = spec[3];
-        sb[0] = spec[4];
-        sb[1] = spec[5];
-    break;
-    case 4:
-        sa[0] = spec[3];
-        sa[1] = spec[3];
-    case 3:
-        sr[0] = spec[0];
-        sr[1] = spec[0];
-        sg[0] = spec[1];
-        sg[1] = spec[1];
-        sb[0] = spec[2];
-        sb[1] = spec[2];
-    break;
-    default:
-        return;
-    }
-
-    uint32_t r, g, b, a;
-
-    r = strtoul(sr, NULL, 16);
-    g = strtoul(sg, NULL, 16);
-    b = strtoul(sb, NULL, 16);
-    a = strtoul(sa, NULL, 16);
-
-    r = MIN(r, 255);
-    g = MIN(g, 255);
-    b = MIN(b, 255);
-    a = MIN(a, 255);
-
-    colour->r = (double) r / 0xff;
-    colour->g = (double) g / 0xff;
-    colour->b = (double) b / 0xff;
-    colour->a = (double) a / 0xff;
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -993,9 +928,9 @@ main(int argc, char *argv[])
     self->text_colour.a = 1.0;
     if ( argc > 1 )
     {
-        _ww_dock_parse_colour(argv[1], &self->background_colour);
+        _ww_parse_colour(argv[1], &self->background_colour);
         if ( argc > 2 )
-            _ww_dock_parse_colour(argv[2], &self->text_colour);
+            _ww_parse_colour(argv[2], &self->text_colour);
     }
 
 

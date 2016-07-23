@@ -87,11 +87,7 @@ typedef struct {
 #endif /* ENABLE_IMAGES */
     int32_t width;
     int32_t height;
-    struct {
-        uint8_t red;
-        uint8_t green;
-        uint8_t blue;
-    } colour;
+    WwColour colour;
     enum zww_background_v1_fit_method fit_method;
     WwBackgroundBuffer *buffer;
 } WwBackgroundContext;
@@ -241,9 +237,9 @@ _ww_background_create_buffer(WwBackgroundContext *self, int32_t width, int32_t h
 #endif /* ENABLE_IMAGES */
             {
                 pixel[ALPHA_BYTE] = 0xff;
-                pixel[RED_BYTE]   = self->colour.red;
-                pixel[GREEN_BYTE] = self->colour.green;
-                pixel[BLUE_BYTE]  = self->colour.blue;
+                pixel[RED_BYTE]   = self->colour.r * 0xff;
+                pixel[GREEN_BYTE] = self->colour.g * 0xff;
+                pixel[BLUE_BYTE]  = self->colour.b * 0xff;
             }
         }
     }
@@ -791,17 +787,8 @@ main(int argc, char *argv[])
 
     if ( argc > 1 )
     {
-        char *spec = argv[1];
-        if ( ( spec[0] == '#' ) && ( strlen(spec) == strlen("#ffffff") ) )
+        if ( _ww_parse_colour(argv[1], &self->colour) )
         {
-            char red[3] = { spec[1], spec[2], '\0' };
-            char green[3] = { spec[3], spec[4], '\0' };
-            char blue[3] = { spec[5], spec[6], '\0' };
-
-            self->colour.red = strtoul(red, NULL, 16);
-            self->colour.green = strtoul(green, NULL, 16);
-            self->colour.blue = strtoul(blue, NULL, 16);
-
             if ( argc > 3 )
             {
                 self->width = strtol(argv[2], NULL, 0);
@@ -813,10 +800,10 @@ main(int argc, char *argv[])
         {
             GError *error = NULL;
             GdkPixbufFormat *format;
-            format = gdk_pixbuf_get_file_info(spec, NULL, NULL);
+            format = gdk_pixbuf_get_file_info(argv[1], NULL, NULL);
             if ( format != NULL )
             {
-                self->image = spec;
+                self->image = argv[1];
                 self->image_scalable = gdk_pixbuf_format_is_scalable(format);
                 self->pixbuf = gdk_pixbuf_new_from_file(self->image, &error);
                 if ( self->pixbuf == NULL )

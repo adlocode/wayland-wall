@@ -75,7 +75,9 @@
 #endif
 
 #define ww_log(type, format, ...) fprintf(stderr, "[%s:%d] %s() " type " " format "\n", __FILE__, __LINE__, __func__, ## __VA_ARGS__)
-#define ww_warning(format, ...) ww_log("WARN", format, ## __VA_ARGS__)
+#define ww_debug(format, ...) ww_log("DEBUG", format, ## __VA_ARGS__)
+#define ww_warning(format, ...) ww_log("WARNING", format, ## __VA_ARGS__)
+#define ww_error(format, ...) do { ww_log("ERROR", format, ## __VA_ARGS__); abort(); } while (0)
 
 #define ww_new0(type, n) ((type *)calloc(sizeof(type), n))
 

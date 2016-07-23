@@ -926,11 +926,54 @@ main(int argc, char *argv[])
     self->text_colour.g = 1.0;
     self->text_colour.b = 1.0;
     self->text_colour.a = 1.0;
-    if ( argc > 1 )
+
+    int arg;
+    while ( ( arg = getopt(argc, argv, "b:t:c:C:") ) != -1 )
     {
-        _ww_parse_colour(argv[1], &self->background_colour);
-        if ( argc > 2 )
-            _ww_parse_colour(argv[2], &self->text_colour);
+        bool good = false;
+        switch ( arg )
+        {
+        case 'b':
+            if ( _ww_parse_colour(optarg, &self->background_colour) )
+                good = true;
+        break;
+        case 't':
+            if ( _ww_parse_colour(optarg, &self->text_colour) )
+                good = true;
+        break;
+        case 'c':
+        {
+            char *e;
+            errno = 0;
+            self->buffer_count = strtoul(optarg, &e, 10);
+            if ( ( e != optarg ) && ( errno == 0 ) )
+                good = true;
+        }
+        break;
+        case 'C':
+            self->cursor.theme_name = optarg;
+            good = true;
+        break;
+        default:
+        break;
+        }
+        if ( ! good )
+        {
+            fprintf(stderr, ""
+                "Usage:"
+                "\n    %s [OPTION...] - Demo client for Wayland Wall dock protocol"
+                "\n"
+                "\nOptions:"
+                "\n    -b <colour>      Colour to use as background, defaults to #000000"
+                "\n    -t <colour>      Colour to use for the text, defaults to #FFFFFF"
+                "\n    -c <count>       Number of buffers to use, defaults to 3"
+                "\n    -C <name>        The cursor theme to use"
+                "\n"
+                "\nFormats:"
+                "\n    Colours options supports #RRGGBB(AA) and #RGB(A) formats"
+                "\n\n", argv[0]);
+            return 3;
+        }
     }
 
 
@@ -945,13 +988,13 @@ main(int argc, char *argv[])
     {
         _ww_dock_disconnect(self);
         ww_warning("No wl_shm interface provided by the compositor");
-        return 3;
+        return 4;
     }
     if ( self->dock_manager == NULL )
     {
         _ww_dock_disconnect(self);
         ww_warning("No ww_dock_manager interface provided by the compositor");
-        return 3;
+        return 4;
     }
 
     WwDock *dock;
@@ -959,7 +1002,7 @@ main(int argc, char *argv[])
     current = time(NULL);
     dock = _ww_dock_create(self, current);
     if ( dock == NULL )
-        return 4;
+        return 5;
 
     int ret;
     do

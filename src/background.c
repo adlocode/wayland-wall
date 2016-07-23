@@ -785,25 +785,43 @@ main(int argc, char *argv[])
     wl_list_init(&self->seats);
     wl_list_init(&self->outputs);
 
-    if ( argc > 1 )
+    int arg;
+    while ( ( arg = getopt(argc, argv, "c:w:h:f:C:") ) != -1 )
     {
-        if ( _ww_parse_colour(argv[1], &self->colour) )
+        bool good = false;
+        switch ( arg )
         {
-            if ( argc > 3 )
-            {
-                self->width = strtol(argv[2], NULL, 0);
-                self->height = strtol(argv[3], NULL, 0);
-            }
+        case 'c':
+            if ( _ww_parse_colour(optarg, &self->colour) )
+                good = true;
+        break;
+        case 'w':
+        {
+            char *e;
+            errno = 0;
+            self->width = strtoul(optarg, &e, 10);
+            if ( ( e != optarg ) && ( errno == 0 ) )
+                good = true;
         }
+        break;
+        case 'h':
+        {
+            char *e;
+            errno = 0;
+            self->height = strtoul(optarg, &e, 10);
+            if ( ( e != optarg ) && ( errno == 0 ) )
+                good = true;
+        }
+        break;
 #ifdef ENABLE_IMAGES
-        else
+        case 'f':
         {
             GError *error = NULL;
             GdkPixbufFormat *format;
-            format = gdk_pixbuf_get_file_info(argv[1], NULL, NULL);
+            format = gdk_pixbuf_get_file_info(optarg, NULL, NULL);
             if ( format != NULL )
             {
-                self->image = argv[1];
+                self->image = optarg;
                 self->image_scalable = gdk_pixbuf_format_is_scalable(format);
                 self->pixbuf = gdk_pixbuf_new_from_file(self->image, &error);
                 if ( self->pixbuf == NULL )
@@ -816,9 +834,37 @@ main(int argc, char *argv[])
                     self->width = gdk_pixbuf_get_width(self->pixbuf);
                     self->height = gdk_pixbuf_get_height(self->pixbuf);
                 }
+                good = true;
             }
         }
 #endif /* ENABLE_IMAGES */
+        case 'C':
+            self->cursor.theme_name = optarg;
+            good = true;
+        break;
+        default:
+        break;
+        }
+        if ( ! good )
+        {
+            fprintf(stderr, ""
+                "Usage:"
+                "\n    %s [OPTION...] - Demo client for Wayland Wall background protocol"
+                "\n"
+                "\nOptions:"
+                "\n    -c <colour>      Colour to use as background, defaults to #000000"
+                "\n    -w <size>        Width of the buffer to create"
+                "\n    -h <size>        Height of the buffer to create"
+#ifdef ENABLE_IMAGES
+                "\n    -f <file>        File to use as background image"
+#endif /* ENABLE_IMAGES */
+                "\n    -C <name>        The cursor theme to use"
+                "\n"
+                "\nFormats:"
+                "\n    Colours options supports #RRGGBB(AA) and #RGB(A) formats"
+                "\n\n", argv[0]);
+            return 3;
+        }
     }
 
     self->registry = wl_display_get_registry(self->display);

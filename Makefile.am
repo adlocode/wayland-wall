@@ -3,6 +3,7 @@ AM_MAKEFLAGS = --no-print-directory
 
 unstable_protocols = \
 	unstable/background/background-unstable-v1.xml \
+	unstable/background/background-unstable-v2.xml \
 	unstable/dock-manager/dock-manager-unstable-v1.xml \
 	unstable/notification-area/notification-area-unstable-v1.xml \
 	$(null)

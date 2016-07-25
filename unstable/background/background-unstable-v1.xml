@@ -23,7 +23,7 @@
     </copyright>
 
     <interface name="zww_background_v1" version="1">
-	<description summary="singleton for dock management">
+	<description summary="singleton for background management">
 	    The object is a singleton global.
 
 	    This interface can only be bound once at the same time.

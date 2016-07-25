@@ -39,7 +39,8 @@ bin_PROGRAMS += ww-background
 ww_background_SOURCES = \
 	src/helpers.h \
 	src/background.c \
-	src/unstable/background/background-unstable-v1-protocol.c \
+	src/unstable/background/background-unstable-v2-protocol.c \
+	src/stable/viewporter/viewporter-protocol.c \
 	$(null)
 
 ww_background_CFLAGS = \
@@ -53,7 +54,7 @@ ww_background_LDADD = \
 	$(WAYLAND_LIBS) \
 	$(null)
 
-ww-background src/ww_background-background.o: src/unstable/background/background-unstable-v1-client-protocol.h
+ww-background src/ww_background-background.o: src/unstable/background/background-unstable-v2-client-protocol.h src/stable/viewporter/viewporter-client-protocol.h
 
 if ENABLE_TEXT
 
@@ -92,4 +93,13 @@ src/%-server-protocol.h: %.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(WAYLAND_SCANNER) server-header < $< > $@
 
 src/%-client-protocol.h: %.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(WAYLAND_SCANNER) client-header < $< > $@
+
+src/%-protocol.c: $(wpprotocoldir)/%.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(WAYLAND_SCANNER) code < $< > $@
+
+src/%-server-protocol.h: $(wpprotocoldir)/%.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(WAYLAND_SCANNER) server-header < $< > $@
+
+src/%-client-protocol.h: $(wpprotocoldir)/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(WAYLAND_SCANNER) client-header < $< > $@

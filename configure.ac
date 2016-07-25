@@ -41,6 +41,11 @@ PKG_NOARCH_INSTALLDIR
 #
 # Dependencies
 #
+
+PKG_CHECK_MODULES([WAYLAND_PROTOCLS], [wayland-protocols])
+wpprotocoldir=`${PKG_CONFIG} --variable=pkgdatadir wayland-protocols`
+AC_SUBST([wpprotocoldir])
+
 wayland_min_version=1.9.91
 AC_ARG_ENABLE([clients], AS_HELP_STRING([--enable-clients], [Enable simple clients for some of the protocols]), [], [enable_clients=no])
 AC_ARG_ENABLE([images], AS_HELP_STRING([--enable-images], [Enable images support in clients]), [], [enable_images=no])

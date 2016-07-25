@@ -38,27 +38,35 @@
 static inline const guchar *gdk_pixbuf_read_pixels(GdkPixbuf *pixbuf) { return gdk_pixbuf_get_pixels(pixbuf); }
 #endif /* gdk-pixbux < 2.32 */
 #endif /* ENABLE_IMAGES */
-#include "unstable/background/background-unstable-v1-client-protocol.h"
+#include "stable/viewporter/viewporter-client-protocol.h"
+#include "unstable/background/background-unstable-v2-client-protocol.h"
 
 /* Supported interface versions */
 #define WL_COMPOSITOR_INTERFACE_VERSION 3
+#define WL_SUBCOMPOSITOR_INTERFACE_VERSION 1
 #define WW_BACKGROUND_INTERFACE_VERSION 1
 #define WL_SHM_INTERFACE_VERSION 1
 #define WL_SEAT_INTERFACE_VERSION 5
 #define WL_OUTPUT_INTERFACE_VERSION 2
+#define WP_VIEWPORTER_INTERFACE_VERSION 1
 
 typedef enum {
     WW_BACKGROUND_GLOBAL_COMPOSITOR,
+    WW_BACKGROUND_GLOBAL_SUBCOMPOSITOR,
     WW_BACKGROUND_GLOBAL_BACKGROUND,
     WW_BACKGROUND_GLOBAL_SHM,
+    WW_BACKGROUND_GLOBAL_VIEWPORTER,
     _WW_BACKGROUND_GLOBAL_SIZE,
 } WwBackgroundGlobalName;
 
 typedef struct {
-    bool released;
+    bool to_free;
     struct wl_buffer *buffer;
-    void *data;
-    size_t size;
+    bool released;
+#ifdef ENABLE_IMAGES
+    struct wl_buffer *image_buffer;
+    bool image_released;
+#endif /* ENABLE_IMAGES */
 } WwBackgroundBuffer;
 
 typedef struct {
@@ -67,8 +75,10 @@ typedef struct {
     struct wl_registry *registry;
     uint32_t global_names[_WW_BACKGROUND_GLOBAL_SIZE];
     struct wl_compositor *compositor;
-    struct zww_background_v1 *background;
+    struct wl_subcompositor *subcompositor;
+    struct zww_background_v2 *background;
     struct wl_shm *shm;
+    struct wp_viewporter *viewporter;
     struct {
         char *theme_name;
         char **name;
@@ -88,7 +98,6 @@ typedef struct {
     int32_t width;
     int32_t height;
     WwColour colour;
-    enum zww_background_v1_fit_method fit_method;
     WwBackgroundBuffer *buffer;
 } WwBackgroundContext;
 
@@ -98,6 +107,12 @@ typedef struct  {
     int32_t width;
     int32_t height;
     struct wl_surface *surface;
+    struct wp_viewport *viewport;
+#ifdef ENABLE_IMAGES
+    struct wl_surface *image_surface;
+    struct wl_subsurface *image_subsurface;
+    struct wp_viewport *image_viewport;
+#endif /* ENABLE_IMAGES */
 } WwBackgroundSurface;
 
 typedef struct {
@@ -120,17 +135,54 @@ struct _WwBackgroundOutput {
 };
 
 static void
-_ww_background_buffer_release(void *data, struct wl_buffer *buf)
+_ww_background_buffer_cleanup(WwBackgroundBuffer *self)
 {
-    WwBackgroundBuffer *self = data;
+    if ( ! self->to_free )
+        return;
+
+    int count = 1;
+
+#ifdef ENABLE_IMAGES
+    ++count;
+    if ( self->image_released )
+    {
+        if ( self->image_buffer != NULL )
+            wl_buffer_destroy(self->image_buffer);
+        --count;
+    }
+#endif /* ENABLE_IMAGES */
 
     if ( self->released )
     {
         wl_buffer_destroy(self->buffer);
-        free(self);
+        --count;
     }
-    else
+
+    if ( count > 0 )
+        return;
+
+    free(self);
+}
+
+static void
+_ww_background_buffer_release(void *data, struct wl_buffer *buf)
+{
+    WwBackgroundBuffer *self = data;
+
+    if ( self->buffer == buf )
         self->released = true;
+#ifdef ENABLE_IMAGES
+    if ( self->image_buffer == buf )
+        self->image_released = true;
+#endif /* ENABLE_IMAGES */
+    _ww_background_buffer_cleanup(self);
+}
+
+static void
+_ww_background_buffer_free(WwBackgroundBuffer *self)
+{
+    self->to_free = true;
+    _ww_background_buffer_cleanup(self);
 }
 
 static const struct wl_buffer_listener _ww_background_buffer_listener = {
@@ -142,17 +194,48 @@ _ww_background_surface_update(WwBackgroundSurface *self, WwBackgroundBuffer *buf
 {
     struct wl_region *region;
 
-    wl_surface_damage(self->surface, 0, 0, self->width, self->height);
     wl_surface_attach(self->surface, buffer->buffer, 0, 0);
     if ( wl_surface_get_version(self->surface) >= WL_SURFACE_SET_BUFFER_SCALE_SINCE_VERSION )
         wl_surface_set_buffer_scale(self->surface, self->output->scale);
     region = wl_compositor_create_region(self->output->context->compositor);
-    wl_region_add(region, 0, 0, self->width, self->height);
+    wl_region_add(region, 0, 0, self->output->width, self->output->height);
     wl_surface_set_opaque_region(self->surface, region);
+
+#ifdef ENABLE_IMAGES
+    if ( self->output->context->pixbuf != NULL )
+    {
+        int image_width, image_height;
+        image_width = gdk_pixbuf_get_width(self->output->context->pixbuf);
+        image_height = gdk_pixbuf_get_height(self->output->context->pixbuf);
+
+        if ( self->image_viewport != NULL )
+        {
+            double sx, sy, s;
+            sx = (double) image_width / self->output->width;
+            sy = (double) image_height / self->output->height;
+            s = MAX(sx, sy);
+            image_width /= s;
+            image_height /= s;
+            wp_viewport_set_destination(self->image_viewport, image_width, image_height);
+        }
+
+        wl_surface_attach(self->image_surface, buffer->image_buffer, 0, 0);
+        if ( wl_surface_get_version(self->image_surface) >= WL_SURFACE_SET_BUFFER_SCALE_SINCE_VERSION )
+            wl_surface_set_buffer_scale(self->image_surface, self->output->scale);
+
+        wl_subsurface_set_position(self->image_subsurface, self->output->width / 2 - image_width / 2, self->output->height / 2 - image_height / 2);
+
+        wl_surface_commit(self->image_surface);
+    }
+#endif /* ENABLE_IMAGES */
+
+    if ( self->viewport != NULL )
+        wp_viewport_set_source(self->viewport, 0, 0, wl_fixed_from_int(self->output->width), wl_fixed_from_int(self->output->height));
+
     wl_surface_commit(self->surface);
     wl_region_destroy(region);
 
-    zww_background_v1_set_background(self->output->context->background, self->surface, self->output->output, self->output->context->fit_method);
+    zww_background_v2_set_background(self->output->context->background, self->surface, self->output->output);
 }
 
 #if BYTE_ORDER == BIG_ENDIAN
@@ -177,22 +260,25 @@ _ww_background_create_buffer(WwBackgroundContext *self, int32_t width, int32_t h
     int32_t stride;
     size_t size;
 
+    stride = 4 * width;
+    size = stride * height;
+
 #ifdef ENABLE_IMAGES
+    struct wl_buffer *image_buffer;
     const uint8_t *pdata = NULL;
-    int32_t cstride, bytes;
+    int image_width, image_height;
+    int cstride, bytes;
     if ( self->pixbuf != NULL )
     {
+        image_width = gdk_pixbuf_get_width(self->pixbuf);
+        image_height = gdk_pixbuf_get_height(self->pixbuf);
         cstride = gdk_pixbuf_get_rowstride(self->pixbuf);
         bytes = gdk_pixbuf_get_has_alpha(self->pixbuf) ? 4 : 3;
         pdata = gdk_pixbuf_read_pixels(self->pixbuf);
-        self->fit_method = ZWW_BACKGROUND_V1_FIT_METHOD_DEFAULT;
-    }
-    else
-#endif /* ENABLE_IMAGES */
-        self->fit_method = ZWW_BACKGROUND_V1_FIT_METHOD_CROP;
 
-    stride = 4 * width;
-    size = stride * height;
+        size += image_height * image_width * 4;
+    }
+#endif /* ENABLE_IMAGES */
 
     char filename[PATH_MAX];
     snprintf(filename, PATH_MAX, "%s/%s", self->runtime_dir, "wayland-surface");
@@ -223,18 +309,6 @@ _ww_background_create_buffer(WwBackgroundContext *self, int32_t width, int32_t h
         for ( int32_t x = 0 ; x < width ; ++x )
         {
             uint8_t *pixel = line + x * 4;
-#ifdef ENABLE_IMAGES
-            if ( pdata != NULL )
-            {
-                const uint8_t *ppixel = pdata + y * cstride + x * bytes;
-
-                pixel[ALPHA_BYTE] = 0xff;
-                pixel[RED_BYTE]   = ppixel[0];
-                pixel[GREEN_BYTE] = ppixel[1];
-                pixel[BLUE_BYTE]  = ppixel[2];
-            }
-            else
-#endif /* ENABLE_IMAGES */
             {
                 pixel[ALPHA_BYTE] = 0xff;
                 pixel[RED_BYTE]   = self->colour.r * 0xff;
@@ -244,22 +318,53 @@ _ww_background_create_buffer(WwBackgroundContext *self, int32_t width, int32_t h
         }
     }
 
+#ifdef ENABLE_IMAGES
+    if ( pdata != NULL )
+    {
+        uint8_t *image_data = data + height * stride;
+        for ( int y = 0 ; y < image_height ; ++y )
+        {
+            uint8_t *line = image_data + y * image_width * 4;
+            for ( int32_t x = 0 ; x < image_width ; ++x )
+            {
+                uint8_t *pixel = line + x * 4;
+                const uint8_t *ppixel = pdata + y * cstride + x * bytes;
+
+                pixel[ALPHA_BYTE] = 0xff;
+                pixel[RED_BYTE]   = ppixel[0];
+                pixel[GREEN_BYTE] = ppixel[1];
+                pixel[BLUE_BYTE]  = ppixel[2];
+            }
+        }
+    }
+#endif /* ENABLE_IMAGES */
+
     munmap(data, size);
 
     pool = wl_shm_create_pool(self->shm, fd, size);
-    buffer = wl_shm_pool_create_buffer(pool, 0, width, height, width * 4, WL_SHM_FORMAT_XRGB8888);
+    buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride, WL_SHM_FORMAT_XRGB8888);
+#ifdef ENABLE_IMAGES
+    if ( pdata != NULL )
+        image_buffer = wl_shm_pool_create_buffer(pool, height * stride, image_width, image_height, image_width * 4, WL_SHM_FORMAT_XRGB8888);
+#endif /* ENABLE_IMAGES */
     wl_shm_pool_destroy(pool);
     close(fd);
 
     if ( self->buffer != NULL )
-        _ww_background_buffer_release(self->buffer, self->buffer->buffer);
+        _ww_background_buffer_free(self->buffer);
 
     self->buffer = ww_new0(WwBackgroundBuffer, 1);
     self->buffer->buffer = buffer;
-    self->buffer->data = data;
-    self->buffer->size = size;
-
     wl_buffer_add_listener(buffer, &_ww_background_buffer_listener, self->buffer);
+#ifdef ENABLE_IMAGES
+    if ( pdata != NULL )
+    {
+        self->buffer->image_buffer = image_buffer;
+        wl_buffer_add_listener(image_buffer, &_ww_background_buffer_listener, self->buffer);
+    }
+    else
+        self->buffer->image_released = true;
+#endif /* ENABLE_IMAGES */
 
     WwBackgroundOutput *output;
     wl_list_for_each(output, &self->outputs, link)
@@ -278,62 +383,49 @@ _ww_background_check_buffer(WwBackgroundContext *self, WwBackgroundSurface *surf
 
     width = surface->width;
     height = surface->height;
+    if ( ( self->width < width ) || ( self->height < height ) )
+    {
+        int32_t new_width = MAX(self->width, width), new_height = MAX(self->height, height);
 
 #ifdef ENABLE_IMAGES
-    if ( self->pixbuf != NULL )
-    {
-        int pw, ph;
-        pw = gdk_pixbuf_get_width(self->pixbuf);
-        ph = gdk_pixbuf_get_height(self->pixbuf);
-        if ( self->image_scalable && ( ( pw < width ) || ( ph < height ) ) )
+        GdkPixbuf *pixbuf = self->pixbuf;
+        if ( pixbuf != NULL )
         {
-            GdkPixbuf *pixbuf;
-            GError *error = NULL;
+            int pw, ph;
+            pw = gdk_pixbuf_get_width(pixbuf);
+            ph = gdk_pixbuf_get_height(pixbuf);
+            if ( self->image_scalable && ( ( pw < new_width ) || ( ph < new_height ) ) )
+            {
+                GError *error = NULL;
 
-            /*
-             * If the image is scalable, we already loaded it at the biggest size we need
-             * so we use MAX() to get the biggest size again
-             */
-            pixbuf = gdk_pixbuf_new_from_file_at_size(self->image, MAX(pw, width), MAX(ph, height), &error);
-            if ( pixbuf != NULL )
-            {
-                GdkPixbuf *tmp = self->pixbuf;
-                self->pixbuf = pixbuf;
-                width = gdk_pixbuf_get_width(self->pixbuf);
-                height = gdk_pixbuf_get_height(self->pixbuf);
-                if ( _ww_background_create_buffer(self, width, height) )
+                /*
+                 * If the image is scalable, we already loaded it at the biggest size we need
+                 * so we use MAX() to get the biggest size again
+                 */
+                self->pixbuf = gdk_pixbuf_new_from_file_at_size(self->image, MAX(pw, new_width), MAX(ph, new_height), &error);
+                if ( self->pixbuf == NULL )
                 {
-                    g_object_unref(tmp);
-                    return;
+                    self->pixbuf = pixbuf;
+                    ww_warning("Couldn’t reload the pixbuf: %s", error->message);
+                    g_error_free(error);
                 }
-                else
-                {
-                    ww_warning("Couldn’t create a new buffer from the pixbuf");
-                    g_object_unref(pixbuf);
-                    self->pixbuf = tmp;
-                }
-            }
-            else
-            {
-                ww_warning("Couldn’t reload the pixbuf: %s", error->message);
-                g_error_free(error);
             }
         }
-    }
-    else
 #endif /* ENABLE_IMAGES */
-    {
-        if ( ( self->width < width ) || ( self->height < height ) )
-        {
-            int32_t new_width = MAX(self->width, width), new_height = MAX(self->height, height);
 
-            if ( _ww_background_create_buffer(self, width, height) )
-            {
-                self->width = new_width;
-                self->height = new_height;
-                return;
-            }
+        if ( _ww_background_create_buffer(self, new_width, new_height) )
+        {
+            self->width = new_width;
+            self->height = new_height;
+            return;
         }
+#ifdef ENABLE_IMAGES
+        else if ( pixbuf != self->pixbuf )
+        {
+            g_object_unref(self->pixbuf);
+            self->pixbuf = pixbuf;
+        }
+#endif /* ENABLE_IMAGES */
     }
     _ww_background_surface_update(surface, self->buffer);
 }
@@ -349,6 +441,17 @@ _ww_background_surface_new(WwBackgroundOutput *output)
     self->height = self->output->height * self->output->scale;
 
     self->surface = wl_compositor_create_surface(self->output->context->compositor);
+#ifdef ENABLE_IMAGES
+    self->image_surface = wl_compositor_create_surface(self->output->context->compositor);
+    self->image_subsurface = wl_subcompositor_get_subsurface(self->output->context->subcompositor, self->image_surface, self->surface);
+#endif /* ENABLE_IMAGES */
+    if ( self->output->context->viewporter != NULL )
+    {
+        self->viewport = wp_viewporter_get_viewport(self->output->context->viewporter, self->surface);
+#ifdef ENABLE_IMAGES
+        self->image_viewport = wp_viewporter_get_viewport(self->output->context->viewporter, self->image_surface);
+#endif /* ENABLE_IMAGES */
+    }
     wl_surface_set_user_data(self->surface, self);
 
     return self;
@@ -357,6 +460,18 @@ _ww_background_surface_new(WwBackgroundOutput *output)
 static void
 _ww_background_surface_free(WwBackgroundSurface *self)
 {
+    if ( self->output->context->viewporter != NULL )
+    {
+#ifdef ENABLE_IMAGES
+        wp_viewport_destroy(self->image_viewport);
+#endif /* ENABLE_IMAGES */
+        wp_viewport_destroy(self->viewport);
+    }
+
+#ifdef ENABLE_IMAGES
+    wl_subsurface_destroy(self->image_subsurface);
+    wl_surface_destroy(self->image_surface);
+#endif /* ENABLE_IMAGES */
     wl_surface_destroy(self->surface);
 
     free(self);
@@ -601,15 +716,25 @@ _ww_background_registry_handle_global(void *data, struct wl_registry *registry, 
         self->global_names[WW_BACKGROUND_GLOBAL_COMPOSITOR] = name;
         self->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, MIN(version, WL_COMPOSITOR_INTERFACE_VERSION));
     }
-    else if ( strcmp0(interface, "zww_background_v1") == 0 )
+    else if ( strcmp0(interface, "wl_subcompositor") == 0 )
+    {
+        self->global_names[WW_BACKGROUND_GLOBAL_SUBCOMPOSITOR] = name;
+        self->subcompositor = wl_registry_bind(registry, name, &wl_subcompositor_interface, MIN(version, WL_SUBCOMPOSITOR_INTERFACE_VERSION));
+    }
+    else if ( strcmp0(interface, "zww_background_v2") == 0 )
     {
         self->global_names[WW_BACKGROUND_GLOBAL_BACKGROUND] = name;
-        self->background = wl_registry_bind(registry, name, &zww_background_v1_interface, WW_BACKGROUND_INTERFACE_VERSION);
+        self->background = wl_registry_bind(registry, name, &zww_background_v2_interface, WW_BACKGROUND_INTERFACE_VERSION);
     }
     else if ( strcmp0(interface, "wl_shm") == 0 )
     {
         self->global_names[WW_BACKGROUND_GLOBAL_SHM] = name;
         self->shm = wl_registry_bind(registry, name, &wl_shm_interface, MIN(version, WL_SHM_INTERFACE_VERSION));
+    }
+    else if ( strcmp0(interface, "wp_viewporter") == 0 )
+    {
+        self->global_names[WW_BACKGROUND_GLOBAL_VIEWPORTER] = name;
+        self->viewporter = wl_registry_bind(registry, name, &wp_viewporter_interface, MIN(version, WP_VIEWPORTER_INTERFACE_VERSION));
     }
     else if ( strcmp0(interface, "wl_seat") == 0 )
     {
@@ -672,13 +797,21 @@ _ww_background_registry_handle_global_remove(void *data, struct wl_registry *reg
             wl_compositor_destroy(self->compositor);
             self->compositor = NULL;
         break;
+        case WW_BACKGROUND_GLOBAL_SUBCOMPOSITOR:
+            wl_subcompositor_destroy(self->subcompositor);
+            self->subcompositor = NULL;
+        break;
         case WW_BACKGROUND_GLOBAL_BACKGROUND:
-            zww_background_v1_destroy(self->background);
+            zww_background_v2_destroy(self->background);
             self->background = NULL;
         break;
         case WW_BACKGROUND_GLOBAL_SHM:
             wl_shm_destroy(self->shm);
             self->shm = NULL;
+        break;
+        case WW_BACKGROUND_GLOBAL_VIEWPORTER:
+            wp_viewporter_destroy(self->viewporter);
+            self->viewporter = NULL;
         break;
         case _WW_BACKGROUND_GLOBAL_SIZE:
             assert_not_reached();
@@ -828,11 +961,6 @@ main(int argc, char *argv[])
                 {
                     ww_warning("Couldn’t load image: %s", error->message);
                     g_error_free(error);
-                }
-                else
-                {
-                    self->width = gdk_pixbuf_get_width(self->pixbuf);
-                    self->height = gdk_pixbuf_get_height(self->pixbuf);
                 }
                 good = true;
             }

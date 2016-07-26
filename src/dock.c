@@ -36,7 +36,7 @@
 #include <cairo.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
-#include "unstable/dock-manager/dock-manager-unstable-v1-client-protocol.h"
+#include "unstable/dock-manager/dock-manager-unstable-v2-client-protocol.h"
 
 /* Supported interface versions */
 #define WL_COMPOSITOR_INTERFACE_VERSION 3
@@ -58,7 +58,7 @@ typedef struct {
     struct wl_registry *registry;
     uint32_t global_names[_WW_DOCK_GLOBAL_SIZE];
     struct wl_compositor *compositor;
-    struct zww_dock_manager_v1 *dock_manager;
+    struct zww_dock_manager_v2 *dock_manager;
     struct wl_shm *shm;
     size_t buffer_count;
     struct {
@@ -109,7 +109,7 @@ typedef struct {
     WwDockContext *context;
     struct wl_list link;
     struct wl_surface *surface;
-    struct zww_dock_v1 *dock;
+    struct zww_dock_v2 *dock;
     PangoLayout *text;
     WwBufferPool *pool;
     int32_t width;
@@ -308,37 +308,25 @@ _ww_dock_surface_protocol_leave(void *data, struct wl_surface *wl_surface, struc
 }
 
 static void
-_ww_dock_dock_protocol_configure(void *data, struct zww_dock_v1 *dock, int32_t min_width, int32_t min_height, int32_t max_width, int32_t max_height, enum zww_dock_manager_v1_position position)
+_ww_dock_dock_protocol_configure(void *data, struct zww_dock_v2 *dock, int32_t min_width, int32_t min_height, int32_t max_width, int32_t max_height, enum zww_dock_manager_v2_position position)
 {
     WwDock *self = data;
 
     switch ( position )
     {
-    case ZWW_DOCK_MANAGER_V1_POSITION_TOP:
-    case ZWW_DOCK_MANAGER_V1_POSITION_BOTTOM:
+    case ZWW_DOCK_MANAGER_V2_POSITION_TOP:
+    case ZWW_DOCK_MANAGER_V2_POSITION_BOTTOM:
         self->width = max_width;
         self->height = MAX(min_height, self->text_height + 10);
     break;
-    case ZWW_DOCK_MANAGER_V1_POSITION_LEFT:
-    case ZWW_DOCK_MANAGER_V1_POSITION_RIGHT:
+    case ZWW_DOCK_MANAGER_V2_POSITION_LEFT:
+    case ZWW_DOCK_MANAGER_V2_POSITION_RIGHT:
         self->width = MAX(min_width, self->text_width + 10);
         self->height = max_height;
     break;
-    case ZWW_DOCK_MANAGER_V1_POSITION_DEFAULT:
+    case ZWW_DOCK_MANAGER_V2_POSITION_DEFAULT:
         assert_not_reached();
     }
-}
-
-static void
-_ww_dock_dock_protocol_visible(void *data, struct zww_dock_v1 *dock)
-{
-
-}
-
-static void
-_ww_dock_dock_protocol_hidden(void *data, struct zww_dock_v1 *dock)
-{
-
 }
 
 static const struct wl_surface_listener _ww_dock_surface_interface = {
@@ -346,10 +334,8 @@ static const struct wl_surface_listener _ww_dock_surface_interface = {
     .leave = _ww_dock_surface_protocol_leave,
 };
 
-static const struct zww_dock_v1_listener _ww_dock_dock_interface = {
+static const struct zww_dock_v2_listener _ww_dock_dock_interface = {
     .configure = _ww_dock_dock_protocol_configure,
-    .visible = _ww_dock_dock_protocol_visible,
-    .hidden = _ww_dock_dock_protocol_hidden,
 };
 
 static PangoLayout *
@@ -473,7 +459,7 @@ _ww_dock_create(WwDockContext *context, time_t t)
         return NULL;
     }
 
-    self->dock = zww_dock_manager_v1_create_dock(self->context->dock_manager, self->surface, NULL, ZWW_DOCK_MANAGER_V1_POSITION_DEFAULT);
+    self->dock = zww_dock_manager_v2_create_dock(self->context->dock_manager, self->surface, NULL, ZWW_DOCK_MANAGER_V2_POSITION_DEFAULT);
     if ( self->dock == NULL )
     {
         wl_surface_destroy(self->surface);
@@ -485,12 +471,12 @@ _ww_dock_create(WwDockContext *context, time_t t)
     self->text = _ww_dock_create_text(self);
 
     wl_surface_add_listener(self->surface, &_ww_dock_surface_interface, self);
-    zww_dock_v1_add_listener(self->dock, &_ww_dock_dock_interface, self);
+    zww_dock_v2_add_listener(self->dock, &_ww_dock_dock_interface, self);
     wl_display_roundtrip(self->context->display);
 
     if ( ( self->width < 1 ) || ( self->height < 1 ) )
     {
-        zww_dock_v1_destroy(self->dock);
+        zww_dock_v2_destroy(self->dock);
         wl_surface_destroy(self->surface);
         free(self);
         return NULL;
@@ -499,7 +485,7 @@ _ww_dock_create(WwDockContext *context, time_t t)
     self->pool = _ww_dock_create_buffer_pool(self);
     if ( self->pool == NULL )
     {
-        zww_dock_v1_destroy(self->dock);
+        zww_dock_v2_destroy(self->dock);
         wl_surface_destroy(self->surface);
         free(self);
         return NULL;
@@ -513,7 +499,7 @@ _ww_dock_create(WwDockContext *context, time_t t)
 static void
 _ww_dock_free(WwDock *self)
 {
-    zww_dock_v1_destroy(self->dock);
+    zww_dock_v2_destroy(self->dock);
     wl_surface_destroy(self->surface);
     _ww_dock_buffer_pool_free(self->pool);
     free(self);
@@ -741,10 +727,10 @@ _ww_dock_registry_handle_global(void *data, struct wl_registry *registry, uint32
         self->global_names[WW_DOCK_GLOBAL_COMPOSITOR] = name;
         self->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, MIN(version, WL_COMPOSITOR_INTERFACE_VERSION));
     }
-    else if ( strcmp0(interface, "zww_dock_manager_v1") == 0 )
+    else if ( strcmp0(interface, "zww_dock_manager_v2") == 0 )
     {
         self->global_names[WW_DOCK_GLOBAL_DOCK_MANAGER] = name;
-        self->dock_manager = wl_registry_bind(registry, name, &zww_dock_manager_v1_interface, WW_DOCK_MANAGER_INTERFACE_VERSION);
+        self->dock_manager = wl_registry_bind(registry, name, &zww_dock_manager_v2_interface, WW_DOCK_MANAGER_INTERFACE_VERSION);
     }
     else if ( strcmp0(interface, "wl_shm") == 0 )
     {
@@ -813,7 +799,7 @@ _ww_dock_registry_handle_global_remove(void *data, struct wl_registry *registry,
             self->compositor = NULL;
         break;
         case WW_DOCK_GLOBAL_DOCK_MANAGER:
-            zww_dock_manager_v1_destroy(self->dock_manager);
+            zww_dock_manager_v2_destroy(self->dock_manager);
             self->dock_manager = NULL;
         break;
         case WW_DOCK_GLOBAL_SHM:

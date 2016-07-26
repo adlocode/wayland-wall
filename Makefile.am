@@ -5,6 +5,7 @@ unstable_protocols = \
 	unstable/background/background-unstable-v1.xml \
 	unstable/background/background-unstable-v2.xml \
 	unstable/dock-manager/dock-manager-unstable-v1.xml \
+	unstable/dock-manager/dock-manager-unstable-v2.xml \
 	unstable/notification-area/notification-area-unstable-v1.xml \
 	$(null)
 
@@ -64,7 +65,7 @@ bin_PROGRAMS += ww-dock
 ww_dock_SOURCES = \
 	src/helpers.h \
 	src/dock.c \
-	src/unstable/dock-manager/dock-manager-unstable-v1-protocol.c \
+	src/unstable/dock-manager/dock-manager-unstable-v2-protocol.c \
 	$(null)
 
 ww_dock_CFLAGS = \
@@ -80,7 +81,7 @@ ww_dock_LDADD = \
 	$(WAYLAND_LIBS) \
 	$(null)
 
-ww-dock src/ww_dock-dock.o: src/unstable/dock-manager/dock-manager-unstable-v1-client-protocol.h
+ww-dock src/ww_dock-dock.o: src/unstable/dock-manager/dock-manager-unstable-v2-client-protocol.h
 
 endif
 

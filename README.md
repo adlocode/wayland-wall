@@ -17,6 +17,10 @@ Protocols
 
 We currently have this list of protocols:
 
+*   background
+    This protocol will allow clients to display a surface as your screen background
+*   dock-manager
+    This protocol will allow clients to dock surfaces on screen edges
 *   notification-area
     This protocol will allow notification daemons to display their notifications using Wayland.
 
@@ -28,6 +32,7 @@ For now, these compositors are supported, with these protocols:
 
 * Weston, in [weston-wall](https://github.com/wayland-wall/weston-wall)
     * background
+    * dock-manager
     * notification-area
 * Orbment, in [orbment-wall](https://github.com/wayland-wall/orbment-wall)
     * background
@@ -39,5 +44,7 @@ Client implementations
 
 * background:
     * ww-background, a simple demo (build Wayland Wall with `--enable-clients` and optionally `--enable-images`)
+* dock:
+    * ww-dock, a simple demo (build Wayland Wall with `--enable-clients` and `--enable-text`)
 * notification-area:
     * [eventd](https://www.eventd.org/)

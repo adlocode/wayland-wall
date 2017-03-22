@@ -8,6 +8,7 @@ unstable_protocols = \
 	unstable/dock-manager/dock-manager-unstable-v2.xml \
 	unstable/launcher-menu/launcher-menu-unstable-v1.xml \
 	unstable/notification-area/notification-area-unstable-v1.xml \
+	unstable/window-switcher/window-switcher-unstable-v1.xml \
 	$(null)
 
 stable_protocols = \

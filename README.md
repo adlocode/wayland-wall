@@ -25,6 +25,8 @@ We currently have this list of protocols:
     This protocol will allow launcher and menu clients, with a proper implicit grab
 *   notification-area
     This protocol will allow notification daemons to display their notifications using Wayland.
+*   window-switcher
+    This protocol will allow privileged clients to list, switch to and close other clients surfaces
 
 
 Compositor implementations
@@ -37,6 +39,7 @@ For now, these compositors are supported, with these protocols:
     * dock-manager
     * launcher-menu
     * notification-area
+    * window-switcher (bare implementation, no workspaces support)
 * Orbment, in [orbment-wall](https://github.com/wayland-wall/orbment-wall)
     * background
     * notification-area
@@ -53,3 +56,5 @@ Client implementations
     * [rori](https://github.com/DaveDavenport/rofi/tree/wip/wayland) (experimental)
 * notification-area:
     * [eventd](https://www.eventd.org/)
+* window-switcher:
+    * [rori](https://github.com/DaveDavenport/rofi/tree/wip/wayland) (experimental)

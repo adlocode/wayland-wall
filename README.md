@@ -53,8 +53,8 @@ Client implementations
 * dock:
     * ww-dock, a simple demo (build Wayland Wall with `--enable-clients` and `--enable-text`)
 * launcher-menu:
-    * [rori](https://github.com/DaveDavenport/rofi/tree/wip/wayland) (experimental)
+    * [rofi](https://github.com/DaveDavenport/rofi/tree/wip/wayland) (experimental)
 * notification-area:
     * [eventd](https://www.eventd.org/)
 * window-switcher:
-    * [rori](https://github.com/DaveDavenport/rofi/tree/wip/wayland) (experimental)
+    * [rofi](https://github.com/DaveDavenport/rofi/tree/wip/wayland) (experimental)

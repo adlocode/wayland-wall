@@ -23,12 +23,8 @@
 
 #include "helpers.h"
 
-#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
-#endif /* HAVE_SYS_STAT_H */
-#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
-#endif /* HAVE_FCNTL_H */
 #include <sys/mman.h>
 
 #include <wayland-cursor.h>
@@ -38,8 +34,8 @@
 static inline const guchar *gdk_pixbuf_read_pixels(GdkPixbuf *pixbuf) { return gdk_pixbuf_get_pixels(pixbuf); }
 #endif /* gdk-pixbux < 2.32 */
 #endif /* ENABLE_IMAGES */
-#include "stable/viewporter/viewporter-client-protocol.h"
-#include "unstable/background/background-unstable-v2-client-protocol.h"
+#include "viewporter-client-protocol.h"
+#include "background-unstable-v2-client-protocol.h"
 
 /* Supported interface versions */
 #define WL_COMPOSITOR_INTERFACE_VERSION 3

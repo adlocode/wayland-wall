@@ -23,12 +23,8 @@
 
 #include "helpers.h"
 
-#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
-#endif /* HAVE_SYS_STAT_H */
-#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
-#endif /* HAVE_FCNTL_H */
 #include <sys/mman.h>
 #include <poll.h>
 
@@ -36,7 +32,7 @@
 #include <cairo.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
-#include "unstable/dock-manager/dock-manager-unstable-v2-client-protocol.h"
+#include "dock-manager-unstable-v2-client-protocol.h"
 
 /* Supported interface versions */
 #define WL_COMPOSITOR_INTERFACE_VERSION 3

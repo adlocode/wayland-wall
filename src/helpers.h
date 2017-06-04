@@ -24,40 +24,18 @@
 #ifndef __WW_HELPERS_H__
 #define __WW_HELPERS_H__
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
 
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-#ifdef HAVE_LOCALE_H
 #include <locale.h>
-#endif /* HAVE_LOCALE_H */
-#ifdef HAVE_STRING_H
 #include <string.h>
-#endif /* HAVE_STRING_H */
-#ifdef HAVE_LIMITS_H
 #include <limits.h>
-#endif /* HAVE_LIMITS_H */
-#ifdef HAVE_ERRNO_H
 #include <errno.h>
-#endif /* HAVE_ERRNO_H */
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif /* HAVE_STDLIB_H */
-#ifdef HAVE_STDIO_H
 #include <stdio.h>
-#endif /* HAVE_STDIO_H */
-#ifdef HAVE_STDINT_H
 #include <stdint.h>
-#endif /* HAVE_STDBOOL_H */
-#ifdef HAVE_STDBOOL_H
 #include <stdbool.h>
-#endif /* HAVE_STDBOOL_H */
-#ifdef HAVE_ASSERT_H
 #include <assert.h>
-#endif /* HAVE_ASSERT_H */
 
 #include <wayland-client.h>
 
